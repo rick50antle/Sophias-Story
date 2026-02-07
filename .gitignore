@@ -1,0 +1,32 @@
+# Node.js
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Build output
+/dist/
+/build/
+
+# Dependency directories
+/bower_components/ 
+
+# IDEs and editors
+.idea/
+.vscode/
+
+# Project files
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Linux
+*~
