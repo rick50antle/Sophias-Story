@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 2: Two Directions | Sofia's Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Sans 3', sans-serif; background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%); min-height: 100vh; }
+        .narrative-font { font-family: 'Cormorant Garamond', serif; }
+        input:focus, textarea:focus, button:focus { outline: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+/**
+ * Chapter 2: Two Directions
+ * Sofia's Story — Accounting Chapter Series
+ *
+ * @version 1.0
+ * @date 2026-02-06
+ * @description The $615 donation arrives. The learner splits the record into
+ *   inflows and outflows, then learns the name: cash receipts and disbursements journal.
+ *   Covers Arc Phase 3.
+ */
+
+const { useState } = React;
+
+// ─── Color Palette ───────────────────────────────────────────
+const colors = {
+    primary: '#00356b', primaryLight: '#1a4a7a',
+    sand: '#f5f1e8', sandLight: '#faf8f3',
+    earth: '#8b7355', earthLight: '#d4c4a8', earthDark: '#5c4d3d',
+    accent: '#c9a227', accentWarm: '#d4a84b',
+    textDark: '#2c2416', textMuted: '#6b5d4d',
+    clay: '#c4a574', clayLight: '#e8dcc8', clayDark: '#a08050',
+    success: '#22c55e', successBg: '#f0fdf4',
+    warning: '#f59e0b', warningBg: '#fffbeb',
+    error: '#dc2626', errorBg: '#fef2f2',
+    inflow: '#0369a1', inflowBg: '#e0f2fe',
+    outflow: '#9a3412', outflowBg: '#fff7ed',
+};
+
+// ─── Sound Functions ─────────────────────────────────────────
+const createAudioContext = () => new (window.AudioContext || window.webkitAudioContext)();
+const playSuccessTone = () => { try { const ctx = createAudioContext(); [523.25,659.25,783.99].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.1; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.15); o.start(t);o.stop(t+0.25); }); setTimeout(()=>ctx.close(),600); } catch(e){} };
+const playSoftNope = () => { try { const ctx = createAudioContext(); [400,300].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.12; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.12); o.start(t);o.stop(t+0.17); }); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playBuzzer = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=150;o.type='sawtooth'; const t=ctx.currentTime; g.gain.setValueAtTime(0.25,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.3); o.start(t);o.stop(t+0.35); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playContinueClick = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=600;o.type='sine'; const t=ctx.currentTime; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.01,t+0.08); o.start(t);o.stop(t+0.1); setTimeout(()=>ctx.close(),150); } catch(e){} };
+
+// ─── SVG Icons ───────────────────────────────────────────────
+const ChevronRight = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>);
+const ChevronDown = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>);
+const ChevronUp = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>);
+const BookIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>);
+const RestartIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>);
+const InfoIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>);
+const TrophyIcon = () => (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>);
+const CheckCircleIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>);
+const ArrowDownIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>);
+const ArrowUpIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>);
+
+// ─── Transaction Data ────────────────────────────────────────
+const transactions = [
+    { id: 1,  date: 'Aug 24', desc: 'Portable filter, tubing, buckets',       amount: 45,   direction: 'out' },
+    { id: 2,  date: 'Aug 26', desc: 'Activated carbon, ceramic filter',        amount: 60,   direction: 'out' },
+    { id: 3,  date: 'Aug 30', desc: 'Silicone sealant and gaskets',            amount: 20,   direction: 'out' },
+    { id: 4,  date: 'Sep 2',  desc: 'Water test kit',                          amount: 30,   direction: 'out' },
+    { id: 5,  date: 'Sep 4',  desc: 'Donations from family and friends (via Maya\u2019s fundraiser)', amount: 615, direction: 'in' },
+    { id: 6,  date: 'Sep 5',  desc: 'Bulk materials for 40 filters',           amount: 480,  direction: 'out' },
+    { id: 7,  date: 'Sep 6',  desc: 'Drill press and digital scale',           amount: 320,  direction: 'out' },
+    { id: 8,  date: 'Sep 8',  desc: 'Gloves, scoops, hand pump',              amount: 90,   direction: 'out' },
+    { id: 9,  date: 'Sep 9',  desc: 'More buckets, gaskets, sealing press',    amount: 260,  direction: 'out' },
+    { id: 10, date: 'Sep 10', desc: 'Activated carbon',                        amount: 110,  direction: 'out' },
+    { id: 11, date: 'Sep 12', desc: 'Logo stickers, safety gear, vinyl tubing',amount: 98,   direction: 'out' },
+    { id: 12, date: 'Sep 13', desc: 'Drill press stand materials',             amount: 27,   direction: 'out' },
+    { id: 13, date: 'Sep 14', desc: 'Zip ties, mesh screens, scoops',          amount: 19,   direction: 'out' },
+    { id: 14, date: 'Sep 15', desc: 'Survey forms and TDS meter',              amount: 24,   direction: 'out' },
+];
+
+const TOTAL_IN = transactions.filter(t => t.direction === 'in').reduce((s,t) => s + t.amount, 0);   // 615
+const TOTAL_OUT = transactions.filter(t => t.direction === 'out').reduce((s,t) => s + t.amount, 0); // 1583
+const NET = TOTAL_IN - TOTAL_OUT; // -968
+
+// ─── Main Component ──────────────────────────────────────────
+function Chapter2() {
+    const phaseOrder = ['welcome', 'problem', 'building', 'totals', 'naming', 'complete'];
+    const [phase, setPhase] = useState('welcome');
+
+    // UI state
+    const [showGlossary, setShowGlossary] = useState(false);
+    const [showCreativeNote, setShowCreativeNote] = useState(false);
+    const [devMode, setDevMode] = useState(false);
+    const [headerClickCount, setHeaderClickCount] = useState(0);
+
+    // Q1: Two-choice
+    const [q1Choice, setQ1Choice] = useState(null);
+    const [q1Submitted, setQ1Submitted] = useState(false);
+    const [q1Attempts, setQ1Attempts] = useState(0);
+
+    // Q2: Sorting — assignments maps txn id -> 'in' | 'out' | null
+    const [assignments, setAssignments] = useState({});
+    const [q2Submitted, setQ2Submitted] = useState(false);
+    const [q2Attempts, setQ2Attempts] = useState(0);
+
+    // Q3: Totals
+    const [inAnswer, setInAnswer] = useState('');
+    const [outAnswer, setOutAnswer] = useState('');
+    const [diffAnswer, setDiffAnswer] = useState('');
+    const [q3Submitted, setQ3Submitted] = useState(false);
+    const [q3Attempts, setQ3Attempts] = useState(0);
+
+    // Progress
+    const currentPhaseIndex = phaseOrder.indexOf(phase);
+    const progress = Math.round((currentPhaseIndex / (phaseOrder.length - 1)) * 100);
+
+    const handleHeaderClick = () => {
+        const n = headerClickCount + 1;
+        setHeaderClickCount(n);
+        if (n >= 3) { setDevMode(!devMode); setHeaderClickCount(0); }
+    };
+
+    const handleRestart = () => {
+        playContinueClick(); setPhase('welcome');
+        setShowCreativeNote(false);
+        setQ1Choice(null); setQ1Submitted(false); setQ1Attempts(0);
+        setAssignments({}); setQ2Submitted(false); setQ2Attempts(0);
+        setInAnswer(''); setOutAnswer(''); setDiffAnswer('');
+        setQ3Submitted(false); setQ3Attempts(0);
+    };
+
+    // Q1 handler
+    const handleQ1 = (choice) => {
+        if (q1Submitted) return;
+        setQ1Choice(choice);
+        if (choice === 'no') {
+            playSuccessTone(); setQ1Submitted(true);
+        } else {
+            const n = q1Attempts + 1; setQ1Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ1Submitted(true); setQ1Choice('no'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q2 handlers
+    const assignTransaction = (id, dir) => {
+        if (q2Submitted) return;
+        setAssignments(prev => ({ ...prev, [id]: prev[id] === dir ? null : dir }));
+    };
+
+    const handleQ2Submit = () => {
+        const allAssigned = transactions.every(t => assignments[t.id]);
+        if (!allAssigned) return;
+        const allCorrect = transactions.every(t => assignments[t.id] === t.direction);
+        if (allCorrect) {
+            playSuccessTone(); setQ2Submitted(true);
+        } else {
+            const n = q2Attempts + 1; setQ2Attempts(n);
+            if (n >= 3) {
+                playBuzzer(); setQ2Submitted(true);
+                const correct = {};
+                transactions.forEach(t => { correct[t.id] = t.direction; });
+                setAssignments(correct);
+            } else { playSoftNope(); }
+        }
+    };
+
+    // Q3 handler
+    const handleQ3Submit = () => {
+        const inVal = parseInt(inAnswer.replace(/[$,]/g, ''), 10);
+        const outVal = parseInt(outAnswer.replace(/[$,]/g, ''), 10);
+        const diffVal = parseInt(diffAnswer.replace(/[$,\s]/g, ''), 10);
+        const inOk = Math.abs(inVal - TOTAL_IN) <= 2;
+        const outOk = Math.abs(outVal - TOTAL_OUT) <= 5;
+        const diffOk = Math.abs(diffVal - Math.abs(NET)) <= 5 || Math.abs(diffVal - NET) <= 5;
+        if (inOk && outOk && diffOk) {
+            playSuccessTone(); setQ3Submitted(true);
+        } else {
+            const n = q3Attempts + 1; setQ3Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ3Submitted(true); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // ─── Styles ─────────────────────────────────────────
+    const s = {
+        container: { minHeight: '100vh', background: `linear-gradient(135deg, ${colors.sandLight} 0%, ${colors.sand} 100%)` },
+        main: { padding: '16px', maxWidth: '720px', margin: '0 auto' },
+        card: { background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+        narrativeBlock: { padding: '20px', borderRadius: '12px', borderLeft: `4px solid ${colors.accent}`, background: colors.sand, marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.7, color: colors.textDark, fontStyle: 'italic' },
+        btn: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' },
+        primaryBtn: { background: colors.primary, color: 'white' },
+        outlineBtn: { background: 'transparent', border: `2px solid ${colors.primary}`, color: colors.primary },
+        hintBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        successBox: { padding: '14px', borderRadius: '10px', background: colors.successBg, border: `1px solid ${colors.success}`, marginTop: '10px', fontSize: '14px', color: '#166534' },
+        revealBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, border: `1px solid ${colors.warning}`, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        insightBox: { padding: '20px', borderRadius: '12px', border: `2px solid ${colors.accent}`, background: '#fef9e7', marginBottom: '16px', fontSize: '15px', color: colors.earthDark, lineHeight: 1.6 },
+    };
+
+    // ─── Header ─────────────────────────────────────────
+    const Header = () => (
+        <div style={{ background: colors.primary, borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: '17px' }}>Chapter 2: Two Directions</span>
+                    <p style={{ color: colors.earthLight, fontSize: '13px', marginTop: '4px' }}>Sofia's Story &bull; ~12 min</p>
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    <button onClick={() => setShowGlossary(true)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Glossary"><BookIcon /></button>
+                    <button onClick={handleRestart} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Restart"><RestartIcon /></button>
+                </div>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}><span>Progress</span><span>{progress}%</span></div>
+                <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.2)' }}>
+                    <div style={{ height: '100%', borderRadius: '4px', background: colors.accent, width: `${progress}%`, transition: 'width 0.5s ease' }} />
+                </div>
+            </div>
+            {devMode && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>Dev Mode: Skip to phase</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {phaseOrder.map(p => (<button key={p} onClick={() => setPhase(p)} style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', fontSize: '12px', cursor: 'pointer', background: phase === p ? 'white' : 'rgba(255,255,255,0.2)', color: phase === p ? colors.primary : 'white' }}>{p}</button>))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // ─── Glossary ────────────────────────────────────────
+    const GlossaryModal = () => (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ background: 'white', borderRadius: '16px', maxWidth: '420px', width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+                <div style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', borderRadius: '16px 16px 0 0' }}>
+                    <strong style={{ color: colors.primary }}>Glossary</strong>
+                    <button onClick={() => setShowGlossary(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>&times;</button>
+                </div>
+                <div style={{ padding: '16px' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                        <p style={{ fontWeight: 600, color: colors.primary, fontSize: '14px', marginBottom: '4px' }}>Cash Receipts and Disbursements Journal</p>
+                        <p style={{ fontSize: '13px', color: colors.textMuted, lineHeight: 1.5 }}>A record that separates cash inflows (receipts) from cash outflows (disbursements). The structure you built in this chapter.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    const ContinueButton = ({ onClick, children = "Continue" }) => (
+        <button onClick={() => { playContinueClick(); onClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '16px' }}>{children} <ChevronRight /></button>
+    );
+
+    // ─── PHASE: Welcome ──────────────────────────────────
+    const renderWelcome = () => (
+        <div className="fade-in">
+            <div style={s.narrativeBlock}>
+                <p>Sofia's organized cash record shows where money went out. But on September 4, something different happened: money came <em>in</em>. Maya organized a fundraiser at the farmer's market, and family and friends donated $615 to support Sofia's filter project.</p>
+                <p style={{ marginTop: '12px' }}>The single-column list from Chapter 1 can't handle this. It needs to work in both directions.</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.primary}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>In This Chapter</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>You'll help Sofia split her record into two sides: what came in and what went out. Then you'll learn the name for what you've built in this chapter.</p>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowCreativeNote(!showCreativeNote)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', border: 'none', background: colors.clayLight, color: colors.earthDark, cursor: 'pointer', fontSize: '14px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><InfoIcon /><span style={{ fontWeight: 500 }}>A Note on Creative Liberties</span></span>
+                    {showCreativeNote ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showCreativeNote && (
+                    <div style={{ marginTop: '8px', padding: '16px', borderRadius: '10px', background: 'white', border: `1px solid ${colors.earthLight}`, fontSize: '14px', color: colors.earthDark, lineHeight: 1.6 }}>
+                        <p style={{ marginBottom: '10px' }}>The donation arrives cleanly as a single $615 entry. In practice, donations from multiple people would arrive at different times in different forms. The simplification lets you focus on the structural problem: a one-column list can't handle money moving in two directions.</p>
+                        <p style={{ fontStyle: 'italic' }}>This is fiction in service of teaching accounting concepts.</p>
+                    </div>
+                )}
+            </div>
+
+            <ContinueButton onClick={() => setPhase('problem')}>Begin Chapter</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Problem ──────────────────────────────────
+    const renderProblem = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '10px' }}>The Problem</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6, marginBottom: '14px' }}>
+                    Here's the organized list from Chapter 1&thinsp;&mdash;&thinsp;all outflows. Now look at the new entry at the top:
+                </p>
+
+                {/* Highlight the donation */}
+                <div style={{ padding: '14px 16px', borderRadius: '10px', border: `2px solid ${colors.inflow}`, background: colors.inflowBg, marginBottom: '10px' }}>
+                    <span style={{ fontWeight: 600, color: colors.inflow, fontSize: '13px', marginRight: '8px' }}>Sep 4</span>
+                    <span style={{ fontSize: '15px', color: colors.textDark }}>Received $615 &mdash; donations from family and friends via Maya's fundraiser</span>
+                    <span style={{ fontWeight: 700, color: colors.inflow, float: 'right' }}>+$615</span>
+                </div>
+
+                {/* A few outflow examples */}
+                {[
+                    { date: 'Aug 24', desc: 'Portable filter, tubing, buckets', amount: 45 },
+                    { date: 'Sep 5', desc: 'Bulk materials for 40 filters', amount: 480 },
+                    { date: 'Sep 6', desc: 'Drill press and digital scale', amount: 320 },
+                ].map((t, i) => (
+                    <div key={i} style={{ padding: '10px 16px', borderRadius: '8px', border: `1px solid ${colors.earthLight}`, marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div><span style={{ fontWeight: 600, color: colors.primary, fontSize: '13px', marginRight: '8px' }}>{t.date}</span><span style={{ fontSize: '14px', color: colors.textDark }}>{t.desc}</span></div>
+                        <span style={{ fontWeight: 600, color: colors.outflow, whiteSpace: 'nowrap' }}>&minus;${t.amount}</span>
+                    </div>
+                ))}
+                <p style={{ fontSize: '13px', color: colors.textMuted, textAlign: 'center', marginTop: '6px' }}>...and 10 more outflows</p>
+            </div>
+
+            {/* Q1 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question:</span> Sofia's list worked when all the money went one direction. Now $615 came in. Does the $615 belong in the same column as the spending?
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {['yes', 'no'].map(choice => {
+                        const isThis = q1Choice === choice;
+                        const isCorrect = choice === 'no';
+                        let borderColor = isThis ? colors.primary : colors.earthLight;
+                        let bg = isThis ? '#eef3fa' : 'white';
+                        if (q1Submitted) {
+                            if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                            else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                        }
+                        return (
+                            <button key={choice} onClick={() => handleQ1(choice)} disabled={q1Submitted}
+                                style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q1Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '16px', color: colors.textDark, textTransform: 'capitalize' }}>
+                                {choice === 'yes' ? 'Yes' : 'No'}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {q1Attempts > 0 && q1Attempts < 3 && !q1Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q1Attempts}/2: </strong>
+                        {q1Attempts === 1 && "Think about what the column represents. Every other entry is money going out. Is $615 coming in going out?"}
+                        {q1Attempts === 2 && "If you put spending and donations in the same column, can you tell them apart?"}
+                    </div>
+                )}
+
+                {q1Submitted && q1Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. Mixing inflows and outflows in one column makes it impossible to see how much came in versus how much went out. The list needs two sides.</div>
+                )}
+
+                {q1Submitted && q1Attempts >= 3 && (
+                    <div style={s.revealBox}><strong>No</strong> &mdash; mixing inflows and outflows in one column makes it impossible to see how much came in versus how much went out. The list needs two sides.</div>
+                )}
+            </div>
+
+            {q1Submitted && <ContinueButton onClick={() => setPhase('building')}>Split the Record</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Building ─────────────────────────────────
+    const renderBuilding = () => {
+        const assignedCount = Object.values(assignments).filter(v => v).length;
+        const allAssigned = assignedCount === transactions.length;
+
+        return (
+            <div className="fade-in">
+                <div style={s.card}>
+                    <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '4px' }}>Two Sides</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '14px' }}>
+                        For each transaction, tap <strong style={{ color: colors.inflow }}>Came In</strong> or <strong style={{ color: colors.outflow }}>Went Out</strong>.
+                    </p>
+
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', fontSize: '13px', fontWeight: 600 }}>
+                        <div style={{ flex: 1, textAlign: 'center', padding: '8px', borderRadius: '8px', background: colors.inflowBg, color: colors.inflow }}>
+                            <ArrowDownIcon /> Came In
+                        </div>
+                        <div style={{ flex: 1, textAlign: 'center', padding: '8px', borderRadius: '8px', background: colors.outflowBg, color: colors.outflow }}>
+                            <ArrowUpIcon /> Went Out
+                        </div>
+                    </div>
+
+                    {transactions.map(t => {
+                        const a = assignments[t.id];
+                        let cardBorder = colors.earthLight;
+                        let cardBg = 'white';
+                        if (q2Submitted) {
+                            cardBorder = a === t.direction ? colors.success : colors.error;
+                            cardBg = a === t.direction ? colors.successBg : colors.errorBg;
+                        } else if (a === 'in') {
+                            cardBorder = colors.inflow; cardBg = colors.inflowBg;
+                        } else if (a === 'out') {
+                            cardBorder = colors.outflow; cardBg = colors.outflowBg;
+                        }
+
+                        return (
+                            <div key={t.id} style={{ border: `2px solid ${cardBorder}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '8px', background: cardBg, transition: 'all 0.15s' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <span style={{ fontWeight: 600, color: colors.primary, fontSize: '13px', marginRight: '6px' }}>{t.date}</span>
+                                        <span style={{ fontSize: '14px', color: colors.textDark }}>{t.desc}</span>
+                                    </div>
+                                    <span style={{ fontWeight: 700, color: colors.earthDark, fontSize: '15px', marginLeft: '8px', whiteSpace: 'nowrap' }}>${t.amount}</span>
+                                </div>
+                                {!q2Submitted && (
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button onClick={() => assignTransaction(t.id, 'in')}
+                                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `2px solid ${a === 'in' ? colors.inflow : colors.earthLight}`, background: a === 'in' ? colors.inflowBg : 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: a === 'in' ? colors.inflow : colors.textMuted }}>
+                                            Came In
+                                        </button>
+                                        <button onClick={() => assignTransaction(t.id, 'out')}
+                                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `2px solid ${a === 'out' ? colors.outflow : colors.earthLight}`, background: a === 'out' ? colors.outflowBg : 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: a === 'out' ? colors.outflow : colors.textMuted }}>
+                                            Went Out
+                                        </button>
+                                    </div>
+                                )}
+                                {q2Submitted && (
+                                    <div style={{ fontSize: '13px', fontWeight: 600, color: a === t.direction ? colors.success : colors.error }}>
+                                        {a === t.direction ? '✓' : '✗'} {t.direction === 'in' ? 'Came In' : 'Went Out'}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {!q2Submitted && (
+                        <button onClick={handleQ2Submit} disabled={!allAssigned}
+                            style={{ ...s.btn, ...s.primaryBtn, marginTop: '14px', opacity: allAssigned ? 1 : 0.5 }}>
+                            Check ({assignedCount}/{transactions.length} assigned)
+                        </button>
+                    )}
+
+                    {q2Attempts > 0 && q2Attempts < 3 && !q2Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q2Attempts}/2: </strong>
+                            {q2Attempts === 1 && "If Sofia paid for something, that's money going out. If someone gave Sofia money, that's money coming in."}
+                            {q2Attempts === 2 && "There should be far more entries in 'Went Out' than 'Came In.' Only one entry is an inflow. If you have more than one in 'Came In,' look again."}
+                        </div>
+                    )}
+
+                    {q2Submitted && q2Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> All sorted correctly. One inflow ($615 donation), thirteen outflows. The two-sided structure is taking shape.</div>
+                    )}
+
+                    {q2Submitted && q2Attempts >= 3 && (
+                        <div style={s.revealBox}>The $615 donation is the only inflow. Everything else&thinsp;&mdash;&thinsp;all 13 purchases&thinsp;&mdash;&thinsp;went out. The corrected assignments are shown above.</div>
+                    )}
+                </div>
+
+                {q2Submitted && <ContinueButton onClick={() => setPhase('totals')}>See the Totals</ContinueButton>}
+            </div>
+        );
+    };
+
+    // ─── PHASE: Totals ───────────────────────────────────
+    const renderTotals = () => {
+        const inEntries = transactions.filter(t => t.direction === 'in');
+        const outEntries = transactions.filter(t => t.direction === 'out');
+
+        return (
+            <div className="fade-in">
+                {/* Show the sorted columns */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ background: colors.inflowBg, borderRadius: '12px', padding: '14px', border: `2px solid ${colors.inflow}` }}>
+                        <p style={{ fontWeight: 700, color: colors.inflow, marginBottom: '10px', fontSize: '14px', textAlign: 'center' }}>Came In</p>
+                        {inEntries.map(t => (
+                            <div key={t.id} style={{ fontSize: '13px', color: colors.textDark, marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                                <span>{t.date}</span><span style={{ fontWeight: 600 }}>${t.amount}</span>
+                            </div>
+                        ))}
+                        <div style={{ borderTop: `2px solid ${colors.inflow}`, marginTop: '8px', paddingTop: '8px', fontWeight: 700, color: colors.inflow, display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
+                            <span>Total</span><span>${TOTAL_IN}</span>
+                        </div>
+                    </div>
+                    <div style={{ background: colors.outflowBg, borderRadius: '12px', padding: '14px', border: `2px solid ${colors.outflow}` }}>
+                        <p style={{ fontWeight: 700, color: colors.outflow, marginBottom: '10px', fontSize: '14px', textAlign: 'center' }}>Went Out</p>
+                        {outEntries.map(t => (
+                            <div key={t.id} style={{ fontSize: '13px', color: colors.textDark, marginBottom: '4px', display: 'flex', justifyContent: 'space-between' }}>
+                                <span>{t.date}</span><span style={{ fontWeight: 600 }}>${t.amount}</span>
+                            </div>
+                        ))}
+                        <div style={{ borderTop: `2px solid ${colors.outflow}`, marginTop: '8px', paddingTop: '8px', fontWeight: 700, color: colors.outflow, display: 'flex', justifyContent: 'space-between', fontSize: '15px' }}>
+                            <span>Total</span><span>${TOTAL_OUT}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Q3 */}
+                <div style={s.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question:</span> Now that the record is split&thinsp;&mdash;&thinsp;how much came in, how much went out, and what's the difference?
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        <div>
+                            <label style={{ fontSize: '13px', fontWeight: 600, color: colors.inflow, display: 'block', marginBottom: '4px' }}>Total came in</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '16px', fontWeight: 600 }}>$</span>
+                                <input type="text" inputMode="numeric" value={inAnswer} onChange={e => setInAnswer(e.target.value)} disabled={q3Submitted} placeholder="?" style={{ width: '100px', padding: '10px', border: `2px solid ${q3Submitted ? colors.success : colors.earthLight}`, borderRadius: '8px', textAlign: 'center', fontSize: '16px', fontFamily: 'monospace' }} />
+                            </div>
+                        </div>
+                        <div>
+                            <label style={{ fontSize: '13px', fontWeight: 600, color: colors.outflow, display: 'block', marginBottom: '4px' }}>Total went out</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '16px', fontWeight: 600 }}>$</span>
+                                <input type="text" inputMode="numeric" value={outAnswer} onChange={e => setOutAnswer(e.target.value)} disabled={q3Submitted} placeholder="?" style={{ width: '100px', padding: '10px', border: `2px solid ${q3Submitted ? colors.success : colors.earthLight}`, borderRadius: '8px', textAlign: 'center', fontSize: '16px', fontFamily: 'monospace' }} />
+                            </div>
+                        </div>
+                        <div>
+                            <label style={{ fontSize: '13px', fontWeight: 600, color: colors.primary, display: 'block', marginBottom: '4px' }}>Difference (In minus Out)</label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '16px', fontWeight: 600 }}>$</span>
+                                <input type="text" inputMode="numeric" value={diffAnswer} onChange={e => setDiffAnswer(e.target.value)} disabled={q3Submitted} placeholder="?" style={{ width: '120px', padding: '10px', border: `2px solid ${q3Submitted ? colors.success : colors.earthLight}`, borderRadius: '8px', textAlign: 'center', fontSize: '16px', fontFamily: 'monospace' }} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {!q3Submitted && (
+                        <button onClick={handleQ3Submit} disabled={!inAnswer || !outAnswer || !diffAnswer}
+                            style={{ ...s.btn, ...s.primaryBtn, marginTop: '14px', opacity: (inAnswer && outAnswer && diffAnswer) ? 1 : 0.5 }}>Check</button>
+                    )}
+
+                    {q3Attempts > 0 && q3Attempts < 3 && !q3Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q3Attempts}/2: </strong>
+                            {q3Attempts === 1 && "Add up everything in the 'Came In' column. Then add up everything in 'Went Out.' Subtract. The difference will be negative\u2009—\u2009Sofia spent more than she received."}
+                            {q3Attempts === 2 && `The 'Came In' total is $${TOTAL_IN}. The 'Went Out' total is $${TOTAL_OUT}. Subtract: $${TOTAL_IN} \u2212 $${TOTAL_OUT} = \u2212$${Math.abs(NET)}.`}
+                        </div>
+                    )}
+
+                    {q3Submitted && q3Attempts < 3 && (
+                        <div style={s.successBox}>
+                            <span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span>
+                            <strong>${TOTAL_IN} in, ${TOTAL_OUT} out, net &minus;${Math.abs(NET)}.</strong> Sofia spent ${Math.abs(NET)} more than she received. The two-column structure shows this at a glance&thinsp;&mdash;&thinsp;the single list couldn't.
+                        </div>
+                    )}
+
+                    {q3Submitted && q3Attempts >= 3 && (
+                        <div style={s.revealBox}>
+                            <strong>${TOTAL_IN} came in. ${TOTAL_OUT} went out. Difference: &minus;${Math.abs(NET)}.</strong> Sofia spent ${Math.abs(NET)} more than she received.
+                        </div>
+                    )}
+                </div>
+
+                {q3Submitted && (
+                    <div style={s.insightBox} className="fade-in">
+                        <p><strong>The two-column structure tells you something the single list couldn't:</strong> how much came in, how much went out, and where Sofia stands. The structure itself carries information.</p>
+                    </div>
+                )}
+
+                {q3Submitted && <ContinueButton onClick={() => setPhase('naming')}>Continue</ContinueButton>}
+            </div>
+        );
+    };
+
+    // ─── PHASE: Naming ───────────────────────────────────
+    const renderNaming = () => (
+        <div className="fade-in">
+            <div style={s.narrativeBlock}>
+                <p>What you just built has a name.</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.accent}`, background: '#fef9e7' }}>
+                <p style={{ fontSize: '18px', color: colors.textDark, lineHeight: 1.7, textAlign: 'center' }}>
+                    A record that separates cash coming in from cash going out is called a
+                </p>
+                <p style={{ fontSize: '22px', fontWeight: 700, color: colors.primary, textAlign: 'center', marginTop: '10px', marginBottom: '10px' }}>
+                    cash receipts and disbursements journal
+                </p>
+                <p style={{ fontSize: '16px', color: colors.textDark, lineHeight: 1.7, textAlign: 'center' }}>
+                    <strong>Receipts</strong> are the inflows. <strong>Disbursements</strong> are the outflows.
+                </p>
+            </div>
+
+            <div style={s.card}>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>
+                    Accountants have been using this structure for centuries. You just reinvented it&thinsp;&mdash;&thinsp;you experienced the need for two sides before hearing the formal name.
+                </p>
+            </div>
+
+            <ContinueButton onClick={() => setPhase('complete')}>Continue</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Complete ─────────────────────────────────
+    const renderComplete = () => (
+        <div className="fade-in">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: colors.accent, marginBottom: '14px' }}><TrophyIcon /></div>
+                <h2 style={{ color: colors.primary, fontSize: '22px', fontWeight: 700 }}>Chapter Complete!</h2>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.success}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '12px' }}>What You Discovered</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        'A single list can\'t handle money moving in two directions',
+                        'Splitting into inflows and outflows reveals information that was hidden: how much came in, how much went out, and the net position',
+                        'What you built is called a cash receipts and disbursements journal \u2014 you experienced it before learning the name',
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '14px', color: colors.earthDark }}>
+                            <span style={{ color: colors.success, flexShrink: 0, marginTop: '1px' }}>&#10003;</span><span>{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div style={s.insightBox}>
+                <p style={{ fontWeight: 600, marginBottom: '6px' }}>The Deeper Point</p>
+                <p>The structure of a record isn't just decoration&thinsp;&mdash;&thinsp;it determines what you can see. A single column hid the fact that money moved in two directions. Two columns made it visible. Sofia didn't need new data; she needed a better structure for the data she already had.</p>
+            </div>
+
+            <div style={{ ...s.card, background: colors.clayLight }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>Coming Next</p>
+                <p style={{ fontSize: '14px', color: colors.earthDark, lineHeight: 1.5 }}>
+                    The $615 donation creates a new problem. That money was given to support Sofia's mission of getting filters to underserved communities&thinsp;&mdash;&thinsp;not to fund a business selling filters. But right now it's all in one journal. Whose money is this?
+                </p>
+                <p style={{ fontWeight: 700, color: colors.primary, marginTop: '10px' }}>Next: Chapter 3 &mdash; Whose Money Is This?</p>
+            </div>
+
+            <button onClick={() => { playContinueClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '12px' }}>Next Chapter <ChevronRight /></button>
+            <button onClick={handleRestart} style={{ ...s.btn, ...s.outlineBtn, marginTop: '8px' }}><RestartIcon /> Restart Chapter</button>
+        </div>
+    );
+
+    // ─── Render ──────────────────────────────────────────
+    const renderPhase = () => {
+        switch (phase) {
+            case 'welcome': return renderWelcome();
+            case 'problem': return renderProblem();
+            case 'building': return renderBuilding();
+            case 'totals': return renderTotals();
+            case 'naming': return renderNaming();
+            case 'complete': return renderComplete();
+            default: return null;
+        }
+    };
+
+    return (
+        <div style={s.container}>
+            <Header />
+            <main style={s.main}>{renderPhase()}</main>
+            {showGlossary && <GlossaryModal />}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Chapter2 />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 1: The Messy Notebook | Sofia's Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%);
+            min-height: 100vh;
+        }
+        .narrative-font { font-family: 'Cormorant Garamond', serif; }
+        input:focus, textarea:focus, button:focus { outline: none; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+/**
+ * Chapter 1: The Messy Notebook
+ * Sofia's Story — Accounting Chapter Series
+ *
+ * @version 1.0
+ * @date 2026-02-06
+ * @description Sofia's raw journal — the learner sees the mess, then helps sort
+ *   financial entries from diary entries and calculates total spending.
+ *   Covers Arc Phases 1 + 2.
+ */
+
+const { useState, useEffect, useRef } = React;
+
+// ─── Color Palette ───────────────────────────────────────────
+const colors = {
+    primary: '#00356b',
+    primaryLight: '#1a4a7a',
+    sand: '#f5f1e8',
+    sandLight: '#faf8f3',
+    earth: '#8b7355',
+    earthLight: '#d4c4a8',
+    earthDark: '#5c4d3d',
+    accent: '#c9a227',
+    accentWarm: '#d4a84b',
+    textDark: '#2c2416',
+    textMuted: '#6b5d4d',
+    clay: '#c4a574',
+    clayLight: '#e8dcc8',
+    clayDark: '#a08050',
+    success: '#22c55e',
+    successBg: '#f0fdf4',
+    warning: '#f59e0b',
+    warningBg: '#fffbeb',
+    error: '#dc2626',
+    errorBg: '#fef2f2',
+};
+
+// ─── Sound Functions ─────────────────────────────────────────
+const createAudioContext = () => new (window.AudioContext || window.webkitAudioContext)();
+
+const playSuccessTone = () => {
+    try {
+        const ctx = createAudioContext();
+        [523.25, 659.25, 783.99].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = freq; osc.type = 'sine';
+            const t = ctx.currentTime + i * 0.1;
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.3, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            osc.start(t); osc.stop(t + 0.25);
+        });
+        setTimeout(() => ctx.close(), 600);
+    } catch (e) {}
+};
+
+const playSoftNope = () => {
+    try {
+        const ctx = createAudioContext();
+        [400, 300].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            osc.frequency.value = freq; osc.type = 'sine';
+            const t = ctx.currentTime + i * 0.12;
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+            osc.start(t); osc.stop(t + 0.17);
+        });
+        setTimeout(() => ctx.close(), 400);
+    } catch (e) {}
+};
+
+const playBuzzer = () => {
+    try {
+        const ctx = createAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 150; osc.type = 'sawtooth';
+        const t = ctx.currentTime;
+        gain.gain.setValueAtTime(0.25, t);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        osc.start(t); osc.stop(t + 0.35);
+        setTimeout(() => ctx.close(), 400);
+    } catch (e) {}
+};
+
+const playContinueClick = () => {
+    try {
+        const ctx = createAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 600; osc.type = 'sine';
+        const t = ctx.currentTime;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.15, t + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.01, t + 0.08);
+        osc.start(t); osc.stop(t + 0.1);
+        setTimeout(() => ctx.close(), 150);
+    } catch (e) {}
+};
+
+// ─── SVG Icons ───────────────────────────────────────────────
+const ChevronRight = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>
+);
+const ChevronDown = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+);
+const ChevronUp = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>
+);
+const BookIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+);
+const RestartIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+);
+const InfoIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+);
+const TrophyIcon = () => (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+);
+const CheckCircleIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+);
+
+// ─── Journal Data ────────────────────────────────────────────
+const journalEntries = [
+    { id: 1,  date: 'Aug 14', text: 'Hiking in the Rockies. Saw the stream by the campsite\u2009—\u2009water was cloudy. What if you could filter it with something that breaks down naturally? Sketched an idea on the back of the trail map.', hasMoney: false },
+    { id: 2,  date: 'Aug 16', text: 'Two paths here. I could sell these, or I could get them to communities that need clean water. Maybe both?', hasMoney: false },
+    { id: 3,  date: 'Aug 19', text: 'Called Maya for feedback on filtration methods. She thinks the biodegradable angle is the key differentiator.', hasMoney: false },
+    { id: 4,  date: 'Aug 21', text: 'Bought a notebook to use as a project journal. Starting to get serious.', hasMoney: false },
+    { id: 5,  date: 'Aug 24', text: 'Bought portable filter, tubing, and 5 buckets for disassembly. $45.', hasMoney: true, amount: 45 },
+    { id: 6,  date: 'Aug 26', text: 'Ordered activated carbon block and ceramic filter for prototype #2. $60.', hasMoney: true, amount: 60 },
+    { id: 7,  date: 'Aug 28', text: 'Built rough prototype with household items. Works! Sort of. Water tastes better but still cloudy.', hasMoney: false },
+    { id: 8,  date: 'Aug 30', text: 'Bought silicone sealant and gaskets. $20.', hasMoney: true, amount: 20 },
+    { id: 9,  date: 'Sep 2',  text: 'Ordered water test kit. $30. Need to prove these actually clean the water.', hasMoney: true, amount: 30 },
+    { id: 10, date: 'Sep 5',  text: 'Ordered bulk materials for 40 filters. $480. This is the big commitment.', hasMoney: true, amount: 480 },
+    { id: 11, date: 'Sep 6',  text: 'Bought drill press and digital scale for production. $320.', hasMoney: true, amount: 320 },
+    { id: 12, date: 'Sep 8',  text: 'Bought gloves, scoops, and hand pump. $90.', hasMoney: true, amount: 90 },
+    { id: 13, date: 'Sep 9',  text: 'Bought 20 more buckets, gaskets, and sealing press. $260.', hasMoney: true, amount: 260 },
+    { id: 14, date: 'Sep 10', text: 'Ordered more activated carbon. $110.', hasMoney: true, amount: 110 },
+    { id: 15, date: 'Sep 12', text: 'Logo stickers arrived. $42. Also bought safety gear and vinyl tubing. $56.', hasMoney: true, amount: 98 },
+    { id: 16, date: 'Sep 13', text: 'Built a stand for the drill press out of scrap lumber. $27.', hasMoney: true, amount: 27 },
+    { id: 17, date: 'Sep 14', text: 'Bought zip ties, mesh screens, and extra scoops. $19.', hasMoney: true, amount: 19 },
+    { id: 18, date: 'Sep 15', text: 'Printed survey forms for test users. $8. Bought TDS meter. $16.', hasMoney: true, amount: 24 },
+    { id: 19, date: 'Sep 17', text: 'Built version 4 prototype. Best one yet. Material cost maybe $12 from existing stock.', hasMoney: false },
+    { id: 20, date: 'Sep 18', text: 'Sketched an operations map\u2009—\u2009production on one side of the garage, shipping on the other.', hasMoney: false },
+    { id: 21, date: 'Sep 19', text: 'Tried to match receipts to notebook entries. Half the receipts are in a shoebox. This is a mess.', hasMoney: false },
+    { id: 22, date: 'Sep 20', text: 'The filter design is the real asset. It\u2019s what makes everything else possible. But there\u2019s no line for it anywhere in my spending records.', hasMoney: false },
+];
+
+const FINANCIAL_IDS = journalEntries.filter(e => e.hasMoney).map(e => e.id);
+const TOTAL_SPENDING = journalEntries.filter(e => e.hasMoney).reduce((sum, e) => sum + e.amount, 0);
+// TOTAL_SPENDING = 1583
+
+// ─── Main Component ──────────────────────────────────────────
+function Chapter1() {
+    const phaseOrder = ['welcome', 'journal', 'sorting', 'organizing', 'reflection', 'complete'];
+    const [phase, setPhase] = useState('welcome');
+
+    // UI state
+    const [showGlossary, setShowGlossary] = useState(false);
+    const [showCreativeNote, setShowCreativeNote] = useState(false);
+    const [showPreamble, setShowPreamble] = useState(false);
+    const [devMode, setDevMode] = useState(false);
+    const [headerClickCount, setHeaderClickCount] = useState(0);
+
+    // Sorting phase state (Q1)
+    const [selectedEntries, setSelectedEntries] = useState(new Set());
+    const [sortingSubmitted, setSortingSubmitted] = useState(false);
+    const [sortingAttempts, setSortingAttempts] = useState(0);
+
+    // Count phase state (Q2)
+    const [countAnswer, setCountAnswer] = useState('');
+    const [countSubmitted, setCountSubmitted] = useState(false);
+    const [countAttempts, setCountAttempts] = useState(0);
+
+    // Organizing phase state (Q3)
+    const [totalAnswer, setTotalAnswer] = useState('');
+    const [totalSubmitted, setTotalSubmitted] = useState(false);
+    const [totalAttempts, setTotalAttempts] = useState(0);
+
+    // Reflection phase state (Q4)
+    const [reflectionText, setReflectionText] = useState('');
+    const [reflectionSubmitted, setReflectionSubmitted] = useState(false);
+
+    // Progress
+    const currentPhaseIndex = phaseOrder.indexOf(phase);
+    const progress = Math.round((currentPhaseIndex / (phaseOrder.length - 1)) * 100);
+
+    // Handlers
+    const handleHeaderClick = () => {
+        const n = headerClickCount + 1;
+        setHeaderClickCount(n);
+        if (n >= 3) { setDevMode(!devMode); setHeaderClickCount(0); }
+    };
+
+    const goToPhase = (p) => { playContinueClick(); setPhase(p); };
+
+    const handleRestart = () => {
+        playContinueClick();
+        setPhase('welcome');
+        setShowCreativeNote(false);
+        setSelectedEntries(new Set());
+        setSortingSubmitted(false); setSortingAttempts(0);
+        setCountAnswer(''); setCountSubmitted(false); setCountAttempts(0);
+        setTotalAnswer(''); setTotalSubmitted(false); setTotalAttempts(0);
+        setReflectionText(''); setReflectionSubmitted(false);
+    };
+
+    // ─── Sorting logic (Q1) ─────────────────────────────
+    const toggleEntry = (id) => {
+        if (sortingSubmitted) return;
+        const next = new Set(selectedEntries);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        setSelectedEntries(next);
+    };
+
+    const handleSortingSubmit = () => {
+        const selected = Array.from(selectedEntries).sort((a,b) => a-b);
+        const correct = [...FINANCIAL_IDS].sort((a,b) => a-b);
+        const isCorrect = selected.length === correct.length && selected.every((v, i) => v === correct[i]);
+
+        if (isCorrect) {
+            playSuccessTone();
+            setSortingSubmitted(true);
+        } else {
+            const newAttempts = sortingAttempts + 1;
+            setSortingAttempts(newAttempts);
+            if (newAttempts >= 3) {
+                playBuzzer();
+                setSortingSubmitted(true);
+                setSelectedEntries(new Set(FINANCIAL_IDS));
+            } else {
+                playSoftNope();
+            }
+        }
+    };
+
+    // ─── Count logic (Q2) ───────────────────────────────
+    const handleCountSubmit = () => {
+        const val = parseInt(countAnswer, 10);
+        if (val === FINANCIAL_IDS.length) {
+            playSuccessTone();
+            setCountSubmitted(true);
+        } else {
+            const n = countAttempts + 1;
+            setCountAttempts(n);
+            if (n >= 3) { playBuzzer(); setCountSubmitted(true); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // ─── Total logic (Q3) ───────────────────────────────
+    const handleTotalSubmit = () => {
+        const val = parseInt(totalAnswer.replace(/[$,]/g, ''), 10);
+        if (Math.abs(val - TOTAL_SPENDING) <= 5) {
+            playSuccessTone();
+            setTotalSubmitted(true);
+        } else {
+            const n = totalAttempts + 1;
+            setTotalAttempts(n);
+            if (n >= 3) { playBuzzer(); setTotalSubmitted(true); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // ─── Reflection logic (Q4) ──────────────────────────
+    const handleReflectionSubmit = () => {
+        playSuccessTone();
+        setReflectionSubmitted(true);
+    };
+
+    // ─── Styles ─────────────────────────────────────────
+    const styles = {
+        container: { minHeight: '100vh', background: `linear-gradient(135deg, ${colors.sandLight} 0%, ${colors.sand} 100%)` },
+        main: { padding: '16px', maxWidth: '720px', margin: '0 auto' },
+        card: { background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+        narrativeBlock: { padding: '20px', borderRadius: '12px', borderLeft: `4px solid ${colors.accent}`, background: colors.sand, marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: '1.7', color: colors.textDark, fontStyle: 'italic' },
+        button: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: '600', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' },
+        primaryBtn: { background: colors.primary, color: 'white' },
+        outlineBtn: { background: 'transparent', border: `2px solid ${colors.primary}`, color: colors.primary },
+        hintBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        successBox: { padding: '14px', borderRadius: '10px', background: colors.successBg, border: `1px solid ${colors.success}`, marginTop: '10px', fontSize: '14px', color: '#166534' },
+        revealBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, border: `1px solid ${colors.warning}`, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        insightBox: { padding: '20px', borderRadius: '12px', border: `2px solid ${colors.accent}`, background: '#fef9e7', marginBottom: '16px', fontSize: '15px', color: colors.earthDark, lineHeight: 1.6 },
+    };
+
+    // ─── Header ─────────────────────────────────────────
+    const Header = () => (
+        <div style={{ background: colors.primary, borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: 'white', fontWeight: 700, fontSize: '17px' }}>Chapter 1: The Messy Notebook</span>
+                    </div>
+                    <p style={{ color: colors.earthLight, fontSize: '13px', marginTop: '4px' }}>Sofia's Story &bull; ~18 min</p>
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    <button onClick={() => setShowGlossary(true)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Glossary"><BookIcon /></button>
+                    <button onClick={handleRestart} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Restart"><RestartIcon /></button>
+                </div>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}>
+                    <span>Progress</span><span>{progress}%</span>
+                </div>
+                <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.2)' }}>
+                    <div style={{ height: '100%', borderRadius: '4px', background: colors.accent, width: `${progress}%`, transition: 'width 0.5s ease' }} />
+                </div>
+            </div>
+            {devMode && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>Dev Mode: Skip to phase</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {phaseOrder.map(p => (
+                            <button key={p} onClick={() => setPhase(p)} style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', fontSize: '12px', cursor: 'pointer', background: phase === p ? 'white' : 'rgba(255,255,255,0.2)', color: phase === p ? colors.primary : 'white' }}>{p}</button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // ─── Glossary ────────────────────────────────────────
+    const GlossaryModal = () => (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ background: 'white', borderRadius: '16px', maxWidth: '420px', width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+                <div style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', borderRadius: '16px 16px 0 0' }}>
+                    <strong style={{ color: colors.primary }}>Glossary</strong>
+                    <button onClick={() => setShowGlossary(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>&times;</button>
+                </div>
+                <div style={{ padding: '16px' }}>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, fontStyle: 'italic' }}>No formal accounting terms have been introduced yet. As you progress through the chapters, terms will appear here after you experience them.</p>
+                </div>
+            </div>
+        </div>
+    );
+
+    // ─── Continue Button ─────────────────────────────────
+    const ContinueButton = ({ onClick, children = "Continue" }) => (
+        <button onClick={() => { playContinueClick(); onClick(); }} style={{ ...styles.button, ...styles.primaryBtn, marginTop: '16px' }}>
+            {children} <ChevronRight />
+        </button>
+    );
+
+    // ─── Journal Entry Card ──────────────────────────────
+    const JournalCard = ({ entry, selectable, selected, onClick }) => {
+        const baseStyle = {
+            padding: '14px 16px',
+            borderRadius: '10px',
+            marginBottom: '8px',
+            border: '2px solid',
+            borderColor: selected ? colors.primary : colors.earthLight,
+            background: selected ? '#eef3fa' : 'white',
+            cursor: selectable ? 'pointer' : 'default',
+            transition: 'all 0.15s',
+            minHeight: '48px',
+        };
+        if (sortingSubmitted && selectable) {
+            if (entry.hasMoney && selected) {
+                baseStyle.borderColor = colors.success;
+                baseStyle.background = colors.successBg;
+            } else if (entry.hasMoney && !selected) {
+                baseStyle.borderColor = colors.error;
+                baseStyle.background = colors.errorBg;
+            } else if (!entry.hasMoney && selected) {
+                baseStyle.borderColor = colors.error;
+                baseStyle.background = colors.errorBg;
+            }
+        }
+        return (
+            <div style={baseStyle} onClick={selectable ? onClick : undefined}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                    {selectable && (
+                        <div style={{ width: '22px', height: '22px', borderRadius: '4px', border: `2px solid ${selected ? colors.primary : colors.earthLight}`, background: selected ? colors.primary : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                            {selected && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>}
+                        </div>
+                    )}
+                    <div>
+                        <span style={{ fontWeight: 600, color: colors.primary, fontSize: '13px', marginRight: '8px' }}>{entry.date}</span>
+                        <span style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.5 }}>{entry.text}</span>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // ─── PHASE: Welcome ──────────────────────────────────
+    const renderWelcome = () => (
+        <div className="fade-in">
+            {/* Story So Far — optional preamble */}
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowPreamble(!showPreamble)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '12px', border: 'none', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, color: colors.earthDark, cursor: 'pointer', fontSize: '15px', textAlign: 'left' }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontStyle: 'italic' }}>The story so far&hellip;</span>
+                    {showPreamble ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showPreamble && (
+                    <div style={{ marginTop: '8px', padding: '20px', borderRadius: '12px', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.8, color: colors.textDark }}>
+                        <p>Back from the mountains and full of energy, Sofia did not want to overthink things. She bought enough materials to make forty filters for four hundred dollars, set up in her garage, and spent ten hours building them. She was not sure about the ultimate economics of making and distributing filters in large numbers, but the idea looked promising.</p>
+                        <p style={{ marginTop: '14px' }}>She decided to think of each version of her idea separately. She even named them: <strong>ClearCurrent</strong> for the for-profit initiative, and <strong>The PureAccess Project</strong> for the nonprofit. At first, everything was informal. She worked from her garage, used personal funds, and juggled tasks for both projects. Some friends volunteered their time. Others gave her small amounts of money to help out. A few people even bought filters to test.</p>
+                        <p style={{ marginTop: '14px' }}>She kept track of everything in a journal.</p>
+                    </div>
+                )}
+            </div>
+
+            <div style={styles.narrativeBlock}>
+                <p>Sofia is an engineer who sketched an idea for a biodegradable water filter during a Rocky Mountain hike. For the past month, she has been tracking her project in a personal journal&thinsp;&mdash;&thinsp;ideas, spending, diary entries, prototype notes, all jumbled together.</p>
+                <p style={{ marginTop: '12px' }}>Now she needs to figure out where her money went.</p>
+            </div>
+
+            <div style={{ ...styles.card, border: `2px solid ${colors.primary}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>In This Chapter</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>
+                    You'll see Sofia's actual journal entries from August and September 2024. Then you'll help her sort out the financial information from everything else&thinsp;&mdash;&thinsp;and find out how much she spent.
+                </p>
+            </div>
+
+            {/* Creative Liberties Note */}
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowCreativeNote(!showCreativeNote)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', border: 'none', background: colors.clayLight, color: colors.earthDark, cursor: 'pointer', fontSize: '14px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <InfoIcon /><span style={{ fontWeight: 500 }}>A Note on Creative Liberties</span>
+                    </span>
+                    {showCreativeNote ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showCreativeNote && (
+                    <div style={{ marginTop: '8px', padding: '16px', borderRadius: '10px', background: 'white', border: `1px solid ${colors.earthLight}`, fontSize: '14px', color: colors.earthDark, lineHeight: 1.6 }}>
+                        <p style={{ marginBottom: '10px' }}>This chapter presents Sofia's journal entries in a simplified format. A real project journal would be messier&thinsp;&mdash;&thinsp;entries might be illegible, misfiled, or missing. The amounts and dates are chosen to illustrate how financial information gets lost in unstructured records.</p>
+                        <p style={{ fontStyle: 'italic' }}>This is fiction in service of teaching accounting concepts.</p>
+                    </div>
+                )}
+            </div>
+
+            <ContinueButton onClick={() => setPhase('journal')}>Begin Chapter</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Journal ──────────────────────────────────
+    const renderJournal = () => (
+        <div className="fade-in">
+            <div style={styles.card}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '4px' }}>Sofia's Project Journal</p>
+                <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '16px' }}>August&thinsp;&ndash;&thinsp;September 2024 &bull; Read through her entries.</p>
+                <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '4px' }}>
+                    {journalEntries.map(entry => (
+                        <JournalCard key={entry.id} entry={entry} selectable={false} />
+                    ))}
+                </div>
+            </div>
+
+            <div style={styles.insightBox}>
+                <p>Notice the mix: hiking reflections sit next to purchase receipts. Prototype notes sit next to dollar amounts. Ideas about the future sit next to spending from the past. This is what Sofia has to work with.</p>
+            </div>
+
+            <ContinueButton onClick={() => setPhase('sorting')}>Help Sofia Sort This Out</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Sorting ──────────────────────────────────
+    const renderSorting = () => {
+        const correctCount = FINANCIAL_IDS.length;
+        const selectedCorrect = Array.from(selectedEntries).filter(id => FINANCIAL_IDS.includes(id)).length;
+        const selectedWrong = selectedEntries.size - selectedCorrect;
+
+        return (
+            <div className="fade-in">
+                <div style={styles.card}>
+                    <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '4px' }}>Where Did the Money Go?</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '6px' }}>Sofia asks: "How much have I actually spent on this project?" She flips through her notebook and can't tell.</p>
+                </div>
+
+                {/* Q1: Identify financial entries */}
+                <div style={styles.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '4px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question:</span> Which of these entries involve money&thinsp;&mdash;&thinsp;either spending or receiving?
+                    </p>
+                    <p style={{ fontSize: '13px', color: colors.textMuted, marginBottom: '14px' }}>Tap each entry that involves a dollar amount.</p>
+
+                    <div style={{ maxHeight: '420px', overflowY: 'auto', paddingRight: '4px' }}>
+                        {journalEntries.map(entry => (
+                            <JournalCard
+                                key={entry.id}
+                                entry={entry}
+                                selectable={true}
+                                selected={selectedEntries.has(entry.id)}
+                                onClick={() => toggleEntry(entry.id)}
+                            />
+                        ))}
+                    </div>
+
+                    {!sortingSubmitted && (
+                        <button onClick={handleSortingSubmit} disabled={selectedEntries.size === 0} style={{ ...styles.button, ...styles.primaryBtn, marginTop: '14px', opacity: selectedEntries.size === 0 ? 0.5 : 1 }}>
+                            Check ({selectedEntries.size} selected)
+                        </button>
+                    )}
+
+                    {/* Hints */}
+                    {sortingAttempts > 0 && sortingAttempts < 3 && !sortingSubmitted && (
+                        <div style={styles.hintBox}>
+                            <strong>Hint {sortingAttempts}/2: </strong>
+                            {sortingAttempts === 1 && "Look for entries that mention a specific dollar amount\u2009—\u2009something paid or received."}
+                            {sortingAttempts === 2 && `There are ${correctCount} entries with money. You've selected ${selectedEntries.size}. Check the September entries carefully.`}
+                        </div>
+                    )}
+
+                    {/* Success */}
+                    {sortingSubmitted && sortingAttempts < 3 && (
+                        <div style={styles.successBox}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                                <span style={{ color: colors.success }}><CheckCircleIcon /></span>
+                                <span>That's right! You found all {correctCount} entries that involve money. The rest are diary entries, prototype notes, and reflections&thinsp;&mdash;&thinsp;important to Sofia, but not financial transactions.</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Third strike */}
+                    {sortingSubmitted && sortingAttempts >= 3 && (
+                        <div style={styles.revealBox}>
+                            <strong>Here's what to look for:</strong> The {correctCount} highlighted entries all mention a specific dollar amount. Entries about hiking, prototyping, sketching, and reflecting don't involve money changing hands.
+                        </div>
+                    )}
+                </div>
+
+                {/* Q2: Count (appears after Q1 done) */}
+                {sortingSubmitted && (
+                    <div style={{ ...styles.card }} className="fade-in">
+                        <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '12px', fontSize: '15px' }}>
+                            <span style={{ color: colors.primary }}>Question:</span> How many entries in Sofia's journal involve money?
+                        </p>
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                value={countAnswer}
+                                onChange={e => setCountAnswer(e.target.value)}
+                                disabled={countSubmitted}
+                                placeholder="?"
+                                style={{ width: '80px', padding: '12px', border: `2px solid ${countSubmitted ? colors.success : colors.earthLight}`, borderRadius: '10px', textAlign: 'center', fontSize: '18px', fontFamily: 'monospace' }}
+                            />
+                            {!countSubmitted && (
+                                <button onClick={handleCountSubmit} disabled={!countAnswer} style={{ padding: '12px 20px', borderRadius: '10px', border: 'none', background: colors.primary, color: 'white', fontWeight: 600, cursor: 'pointer', opacity: countAnswer ? 1 : 0.5, fontSize: '15px' }}>Check</button>
+                            )}
+                        </div>
+
+                        {countAttempts > 0 && countAttempts < 3 && !countSubmitted && (
+                            <div style={styles.hintBox}>
+                                <strong>Hint {countAttempts}/2: </strong>
+                                {countAttempts === 1 && "Count every entry where a specific dollar amount appears\u2009—\u2009either money going out or coming in."}
+                                {countAttempts === 2 && "Go through the highlighted entries one by one. Don't skip the combined entries (like Sep 15 with two purchases in one entry)."}
+                            </div>
+                        )}
+
+                        {countSubmitted && countAttempts < 3 && (
+                            <div style={styles.successBox}>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                                    <span style={{ color: colors.success }}><CheckCircleIcon /></span>
+                                    <span>{FINANCIAL_IDS.length} entries involve money. That's your raw material for understanding Sofia's spending.</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {countSubmitted && countAttempts >= 3 && (
+                            <div style={styles.revealBox}>
+                                <strong>{FINANCIAL_IDS.length} entries.</strong> Each one records a purchase Sofia made between August 24 and September 18.
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {sortingSubmitted && countSubmitted && (
+                    <ContinueButton onClick={() => setPhase('organizing')}>Continue</ContinueButton>
+                )}
+            </div>
+        );
+    };
+
+    // ─── PHASE: Organizing ───────────────────────────────
+    const renderOrganizing = () => {
+        const financialEntries = journalEntries.filter(e => e.hasMoney);
+
+        return (
+            <div className="fade-in">
+                <div style={styles.card}>
+                    <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '4px' }}>Adding It Up</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '14px' }}>Here are the financial entries you identified, organized by date.</p>
+
+                    <div style={{ borderRadius: '10px', border: `1px solid ${colors.earthLight}`, overflow: 'hidden' }}>
+                        {financialEntries.map((entry, i) => (
+                            <div key={entry.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderBottom: i < financialEntries.length - 1 ? `1px solid ${colors.earthLight}` : 'none', background: i % 2 === 0 ? 'white' : colors.sandLight }}>
+                                <div style={{ flex: 1 }}>
+                                    <span style={{ fontWeight: 600, color: colors.primary, fontSize: '13px', marginRight: '8px' }}>{entry.date}</span>
+                                    <span style={{ fontSize: '14px', color: colors.textDark }}>{entry.text.split('$')[0].trim().replace(/\.\s*$/, '')}</span>
+                                </div>
+                                <span style={{ fontWeight: 700, color: colors.earthDark, fontSize: '15px', whiteSpace: 'nowrap', marginLeft: '12px' }}>${entry.amount}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Q3: Total */}
+                <div style={styles.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '12px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question:</span> Add up everything Sofia spent. What's the total?
+                    </p>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '18px', fontWeight: 600, color: colors.textDark }}>$</span>
+                        <input
+                            type="text"
+                            inputMode="numeric"
+                            value={totalAnswer}
+                            onChange={e => setTotalAnswer(e.target.value)}
+                            disabled={totalSubmitted}
+                            placeholder="?"
+                            style={{ width: '120px', padding: '12px', border: `2px solid ${totalSubmitted ? colors.success : colors.earthLight}`, borderRadius: '10px', textAlign: 'center', fontSize: '18px', fontFamily: 'monospace' }}
+                        />
+                        {!totalSubmitted && (
+                            <button onClick={handleTotalSubmit} disabled={!totalAnswer} style={{ padding: '12px 20px', borderRadius: '10px', border: 'none', background: colors.primary, color: 'white', fontWeight: 600, cursor: 'pointer', opacity: totalAnswer ? 1 : 0.5, fontSize: '15px' }}>Check</button>
+                        )}
+                    </div>
+
+                    {totalAttempts > 0 && totalAttempts < 3 && !totalSubmitted && (
+                        <div style={styles.hintBox}>
+                            <strong>Hint {totalAttempts}/2: </strong>
+                            {totalAttempts === 1 && "Start with the early purchases: $45 + $60 + $20 + $30. Then add the larger September purchases."}
+                            {totalAttempts === 2 && "The biggest single expense was bulk materials at $480. The drill press and scale were $320. Make sure you have both. The total is between $1,500 and $1,600."}
+                        </div>
+                    )}
+
+                    {totalSubmitted && totalAttempts < 3 && (
+                        <div style={styles.successBox}>
+                            <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                                <span style={{ color: colors.success }}><CheckCircleIcon /></span>
+                                <span><strong>${TOTAL_SPENDING}.</strong> Between August 24 and September 18, Sofia spent ${TOTAL_SPENDING} on her filter project.</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {totalSubmitted && totalAttempts >= 3 && (
+                        <div style={styles.revealBox}>
+                            <strong>The total is ${TOTAL_SPENDING}.</strong> Add up each line: $45 + $60 + $20 + $30 + $480 + $320 + $90 + $260 + $110 + $98 + $27 + $19 + $24 = ${TOTAL_SPENDING}.
+                        </div>
+                    )}
+                </div>
+
+                {totalSubmitted && (
+                    <div style={styles.insightBox} className="fade-in">
+                        <p><strong>You just did something important.</strong> You separated financial information from everything else in Sofia's journal, organized it by date, and calculated a total. Sofia couldn't answer "how much have I spent?"\u2009—\u2009now she can.</p>
+                    </div>
+                )}
+
+                {totalSubmitted && (
+                    <ContinueButton onClick={() => setPhase('reflection')}>Continue</ContinueButton>
+                )}
+            </div>
+        );
+    };
+
+    // ─── PHASE: Reflection ───────────────────────────────
+    const renderReflection = () => (
+        <div className="fade-in">
+            <div style={styles.card}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '12px' }}>One More Thing</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6, marginBottom: '16px' }}>
+                    Look back at the journal entries you set aside&thinsp;&mdash;&thinsp;the ones that don't involve money. The hike. The sketch. The prototype that "works! Sort of." Maya's feedback. The two-path realization. Sofia's September 20 reflection about the filter design.
+                </p>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question:</span> What kinds of information did Sofia's journal capture that your organized spending list does not?
+                </p>
+                <textarea
+                    value={reflectionText}
+                    onChange={e => setReflectionText(e.target.value)}
+                    disabled={reflectionSubmitted}
+                    placeholder="Your thoughts..."
+                    rows={4}
+                    style={{ width: '100%', padding: '14px', border: `2px solid ${reflectionSubmitted ? colors.success : colors.earthLight}`, borderRadius: '10px', fontSize: '15px', resize: 'none', fontFamily: "'Source Sans 3', sans-serif", lineHeight: 1.5 }}
+                />
+                {!reflectionSubmitted && (
+                    <button onClick={handleReflectionSubmit} disabled={reflectionText.trim().length < 10} style={{ ...styles.button, ...styles.primaryBtn, marginTop: '12px', opacity: reflectionText.trim().length < 10 ? 0.5 : 1 }}>Submit</button>
+                )}
+
+                {reflectionSubmitted && (
+                    <div style={styles.successBox} className="fade-in">
+                        <p style={{ marginBottom: '8px' }}><strong>Good.</strong> Sofia's journal captured ideas, relationships, prototype results, and the original inspiration from the hike. Your organized list captured dollars and dates.</p>
+                        <p>Both are useful. But they show different things about Sofia's project. Keep that thought&thinsp;&mdash;&thinsp;it will come back.</p>
+                    </div>
+                )}
+            </div>
+
+            {reflectionSubmitted && (
+                <ContinueButton onClick={() => setPhase('complete')}>Continue</ContinueButton>
+            )}
+        </div>
+    );
+
+    // ─── PHASE: Complete ─────────────────────────────────
+    const renderComplete = () => (
+        <div className="fade-in">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: colors.accent, marginBottom: '14px' }}>
+                    <TrophyIcon />
+                </div>
+                <h2 style={{ color: colors.primary, fontSize: '22px', fontWeight: 700 }}>Chapter Complete!</h2>
+            </div>
+
+            <div style={{ ...styles.card, border: `2px solid ${colors.success}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '12px' }}>What You Discovered</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        'Financial information gets lost when mixed with diary entries, ideas, and notes',
+                        'Organizing by date and amount reveals patterns that were hidden in the mess',
+                        `Sofia spent $${TOTAL_SPENDING} between August 24 and September 18, 2024`,
+                        "Some of the most important entries in Sofia's journal\u2009—\u2009the hike, the design, the two-path idea\u2009—\u2009don't involve money at all",
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '14px', color: colors.earthDark }}>
+                            <span style={{ color: colors.success, flexShrink: 0, marginTop: '1px' }}>&#10003;</span>
+                            <span>{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div style={styles.insightBox}>
+                <p style={{ fontWeight: 600, marginBottom: '6px' }}>The Deeper Point</p>
+                <p>Sofia built something useful: an organized record of her spending. But the organized list and the raw journal show different things. The list shows dollars and dates. The journal shows ideas, relationships, and the inspiration that started it all. Both are real. Both matter. They just capture different parts of Sofia's story.</p>
+            </div>
+
+            <div style={{ ...styles.card, background: colors.clayLight }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>Coming Next</p>
+                <p style={{ fontSize: '14px', color: colors.earthDark, lineHeight: 1.5 }}>
+                    The organized list shows where money went <em>out</em>. But on September 4, money also came <em>in</em>&thinsp;&mdash;&thinsp;$615 in donations from family and friends via Maya's fundraiser. The list needs to handle both directions.
+                </p>
+                <p style={{ fontWeight: 700, color: colors.primary, marginTop: '10px' }}>Next: Chapter 2 &mdash; Two Directions</p>
+            </div>
+
+            <button onClick={() => { playContinueClick(); /* Link will be added later */ }} style={{ ...styles.button, ...styles.primaryBtn, marginTop: '12px' }}>
+                Next Chapter <ChevronRight />
+            </button>
+            <button onClick={handleRestart} style={{ ...styles.button, ...styles.outlineBtn, marginTop: '8px' }}>
+                <RestartIcon /> Restart Chapter
+            </button>
+        </div>
+    );
+
+    // ─── Render ──────────────────────────────────────────
+    const renderPhase = () => {
+        switch (phase) {
+            case 'welcome': return renderWelcome();
+            case 'journal': return renderJournal();
+            case 'sorting': return renderSorting();
+            case 'organizing': return renderOrganizing();
+            case 'reflection': return renderReflection();
+            case 'complete': return renderComplete();
+            default: return null;
+        }
+    };
+
+    return (
+        <div style={styles.container}>
+            <Header />
+            <main style={styles.main}>
+                {renderPhase()}
+            </main>
+            {showGlossary && <GlossaryModal />}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Chapter1 />);
+    </script>
+</body>
+</html>

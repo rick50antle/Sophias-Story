@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 8: The Payoff | Sofia's Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Sans 3', sans-serif; background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%); min-height: 100vh; }
+        .narrative-font { font-family: 'Cormorant Garamond', serif; }
+        input:focus, textarea:focus, button:focus { outline: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+/**
+ * Chapter 8: The Payoff
+ * Sofia's Story — Accounting Chapter Series
+ *
+ * @version 1.0
+ * @date 2026-02-07
+ * @description The final integration chapter. Sofia sits with both sets of
+ *   financial statements and can read them with full understanding. Reflects
+ *   on what accounting shows, what it misses, and what it means to understand
+ *   financial records. Covers Arc Phase 9 (complete).
+ */
+
+const { useState } = React;
+
+// ─── Color Palette ───────────────────────────────────────────
+const colors = {
+    primary: '#00356b', primaryLight: '#1a4a7a',
+    sand: '#f5f1e8', sandLight: '#faf8f3',
+    earth: '#8b7355', earthLight: '#d4c4a8', earthDark: '#5c4d3d',
+    accent: '#c9a227', accentWarm: '#d4a84b',
+    textDark: '#2c2416', textMuted: '#6b5d4d',
+    clay: '#c4a574', clayLight: '#e8dcc8', clayDark: '#a08050',
+    success: '#22c55e', successBg: '#f0fdf4',
+    warning: '#f59e0b', warningBg: '#fffbeb',
+    error: '#dc2626', errorBg: '#fef2f2',
+};
+
+// ─── Sound Functions ─────────────────────────────────────────
+const createAudioContext = () => new (window.AudioContext || window.webkitAudioContext)();
+const playSuccessTone = () => { try { const ctx = createAudioContext(); [523.25,659.25,783.99].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.1; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.15); o.start(t);o.stop(t+0.25); }); setTimeout(()=>ctx.close(),600); } catch(e){} };
+const playSoftNope = () => { try { const ctx = createAudioContext(); [400,300].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.12; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.12); o.start(t);o.stop(t+0.17); }); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playBuzzer = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=150;o.type='sawtooth'; const t=ctx.currentTime; g.gain.setValueAtTime(0.25,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.3); o.start(t);o.stop(t+0.35); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playContinueClick = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=600;o.type='sine'; const t=ctx.currentTime; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.01,t+0.08); o.start(t);o.stop(t+0.1); setTimeout(()=>ctx.close(),150); } catch(e){} };
+
+// ─── SVG Icons ───────────────────────────────────────────────
+const ChevronRight = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>);
+const ChevronDown = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>);
+const ChevronUp = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>);
+const BookIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>);
+const RestartIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>);
+const InfoIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>);
+const TrophyIcon = () => (<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>);
+const CheckCircleIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>);
+
+// ─── Main Component ──────────────────────────────────────────
+function Chapter8() {
+    const phaseOrder = ['welcome', 'clearcurrent', 'pureaccess', 'integration', 'complete'];
+    const [phase, setPhase] = useState('welcome');
+
+    // UI state
+    const [showGlossary, setShowGlossary] = useState(false);
+    const [showCreativeNote, setShowCreativeNote] = useState(false);
+    const [devMode, setDevMode] = useState(false);
+    const [headerClickCount, setHeaderClickCount] = useState(0);
+
+    // Q1: ClearCurrent multi-select
+    const [q1Selected, setQ1Selected] = useState({});
+    const [q1Submitted, setQ1Submitted] = useState(false);
+    const [q1Attempts, setQ1Attempts] = useState(0);
+
+    // Q2: PureAccess two-choice
+    const [q2Choice, setQ2Choice] = useState(null);
+    const [q2Submitted, setQ2Submitted] = useState(false);
+    const [q2Attempts, setQ2Attempts] = useState(0);
+
+    // Q3: Integration reflection
+    const [q3Answer, setQ3Answer] = useState('');
+    const [q3Submitted, setQ3Submitted] = useState(false);
+    const [q3Attempts, setQ3Attempts] = useState(0);
+
+    // Progress
+    const currentPhaseIndex = phaseOrder.indexOf(phase);
+    const progress = Math.round((currentPhaseIndex / (phaseOrder.length - 1)) * 100);
+
+    const handleHeaderClick = () => {
+        const n = headerClickCount + 1;
+        setHeaderClickCount(n);
+        if (n >= 3) { setDevMode(!devMode); setHeaderClickCount(0); }
+    };
+
+    const handleRestart = () => {
+        playContinueClick();
+        setPhase('welcome');
+        setShowCreativeNote(false);
+        setQ1Selected({}); setQ1Submitted(false); setQ1Attempts(0);
+        setQ2Choice(null); setQ2Submitted(false); setQ2Attempts(0);
+        setQ3Answer(''); setQ3Submitted(false); setQ3Attempts(0);
+    };
+
+    // Q1 handler — multi-select (A, D are correct)
+    const toggleQ1Option = (option) => {
+        if (q1Submitted) return;
+        setQ1Selected(prev => ({ ...prev, [option]: !prev[option] }));
+    };
+
+    const handleQ1Submit = () => {
+        const selected = Object.keys(q1Selected).filter(k => q1Selected[k]);
+        const correctSet = new Set(['A', 'D']);
+        const selectedSet = new Set(selected);
+        const isCorrect = selectedSet.size === correctSet.size && [...selectedSet].every(x => correctSet.has(x));
+
+        if (isCorrect) {
+            playSuccessTone(); setQ1Submitted(true);
+        } else {
+            const n = q1Attempts + 1; setQ1Attempts(n);
+            if (n >= 3) {
+                playBuzzer(); setQ1Submitted(true);
+                setQ1Selected({ A: true, D: true });
+            } else {
+                playSoftNope();
+            }
+        }
+    };
+
+    // Q2 handler — two-choice
+    const handleQ2 = (choice) => {
+        if (q2Submitted) return;
+        setQ2Choice(choice);
+        if (choice === 'incomplete') {
+            playSuccessTone(); setQ2Submitted(true);
+        } else {
+            const n = q2Attempts + 1; setQ2Attempts(n);
+            if (n >= 3) {
+                playBuzzer(); setQ2Submitted(true); setQ2Choice('incomplete');
+            } else {
+                playSoftNope();
+            }
+        }
+    };
+
+    // Q3 handler — reflection (minimum 20 characters)
+    const handleQ3Submit = () => {
+        if (q3Answer.trim().length < 20) return;
+        playSuccessTone(); setQ3Submitted(true);
+    };
+
+    // ─── Styles ─────────────────────────────────────────
+    const s = {
+        container: { minHeight: '100vh', background: `linear-gradient(135deg, ${colors.sandLight} 0%, ${colors.sand} 100%)` },
+        main: { padding: '16px', maxWidth: '720px', margin: '0 auto' },
+        card: { background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+        narrativeBlock: { padding: '20px', borderRadius: '12px', borderLeft: `4px solid ${colors.accent}`, background: colors.sand, marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.7, color: colors.textDark, fontStyle: 'italic' },
+        btn: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' },
+        primaryBtn: { background: colors.primary, color: 'white' },
+        outlineBtn: { background: 'transparent', border: `2px solid ${colors.primary}`, color: colors.primary },
+        hintBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        successBox: { padding: '14px', borderRadius: '10px', background: colors.successBg, border: `1px solid ${colors.success}`, marginTop: '10px', fontSize: '14px', color: '#166534' },
+        revealBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, border: `1px solid ${colors.warning}`, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        insightBox: { padding: '20px', borderRadius: '12px', border: `2px solid ${colors.accent}`, background: '#fef9e7', marginBottom: '16px', fontSize: '15px', color: colors.earthDark, lineHeight: 1.6 },
+        statementCard: { background: '#f9f8f6', borderRadius: '12px', padding: '16px', marginBottom: '12px', border: `1px solid ${colors.earthLight}` },
+    };
+
+    // ─── Header ─────────────────────────────────────────
+    const Header = () => (
+        <div style={{ background: colors.primary, borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: '17px' }}>Chapter 8: The Payoff</span>
+                    <p style={{ color: colors.earthLight, fontSize: '13px', marginTop: '4px' }}>Sofia's Story &bull; ~12 min</p>
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    <button onClick={() => setShowGlossary(true)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Glossary"><BookIcon /></button>
+                    <button onClick={handleRestart} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Restart"><RestartIcon /></button>
+                </div>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}><span>Progress</span><span>{progress}%</span></div>
+                <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.2)' }}>
+                    <div style={{ height: '100%', borderRadius: '4px', background: colors.accent, width: `${progress}%`, transition: 'width 0.5s ease' }} />
+                </div>
+            </div>
+            {devMode && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>Dev Mode: Skip to phase</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {phaseOrder.map(p => (<button key={p} onClick={() => setPhase(p)} style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', fontSize: '12px', cursor: 'pointer', background: phase === p ? 'white' : 'rgba(255,255,255,0.2)', color: phase === p ? colors.primary : 'white' }}>{p}</button>))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // ─── Glossary ────────────────────────────────────────
+    const GlossaryModal = () => {
+        const terms = [
+            { term: 'Cash receipts and disbursements journal', definition: 'A record that separates cash inflows (receipts) from cash outflows (disbursements). The structure you built in Chapter 2.' },
+            { term: 'Accounting entity', definition: 'A distinct economic unit \u2014 person, organization, or project \u2014 whose records are kept separate from all other entities. The boundary is a convention, chosen for purposes.' },
+            { term: 'Debits and credits', definition: 'The two sides of every accounting entry. Debits record one type of change; credits record the other.' },
+            { term: 'Accounting identity', definition: 'Assets \u2212 Liabilities = Equity (for-profit) or Net Assets (nonprofit). A framework for organizing financial information, not a formula.' },
+            { term: 'Equity', definition: 'The residual in a for-profit entity \u2014 mathematically determined by recorded assets and liabilities. Almost never what the owner would walk away with.' },
+            { term: 'Net Assets', definition: 'The residual in a nonprofit entity \u2014 the recorded net resources available to pursue the mission.' },
+            { term: 'Double-entry', definition: 'A recording system where every entry touches two things, conveying information about what changed and why.' },
+            { term: 'Recognition', definition: 'The process by which something enters the accounting records. Not everything with economic benefit gets recognized.' },
+            { term: 'Intangible assets', definition: 'Assets without physical substance \u2014 designs, expertise, relationships, reputation. Many are never recorded.' },
+        ];
+
+        return (
+            <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+                <div style={{ background: 'white', borderRadius: '16px', maxWidth: '420px', width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+                    <div style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', borderRadius: '16px 16px 0 0' }}>
+                        <strong style={{ color: colors.primary }}>Glossary</strong>
+                        <button onClick={() => setShowGlossary(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>&times;</button>
+                    </div>
+                    <div style={{ padding: '16px' }}>
+                        {terms.map((item, i) => (
+                            <div key={i} style={{ marginBottom: '16px', paddingBottom: '12px', borderBottom: i < terms.length - 1 ? `1px solid ${colors.earthLight}` : 'none' }}>
+                                <p style={{ fontWeight: 700, color: colors.primary, fontSize: '14px', marginBottom: '4px' }}>{item.term}</p>
+                                <p style={{ fontSize: '13px', color: colors.textMuted }}>{item.definition}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const ContinueButton = ({ onClick, children = "Continue" }) => (
+        <button onClick={() => { playContinueClick(); onClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '16px' }}>{children} <ChevronRight /></button>
+    );
+
+    // ─── PHASE: Welcome ──────────────────────────────────
+    const renderWelcome = () => (
+        <div className="fade-in">
+            <div style={s.narrativeBlock}>
+                <p>Sofia closes her laptop and sits back. She has two sets of financial statements in front of her: one for ClearCurrent, her filter-selling business, and one for PureAccess, the foundation project. Both contain the same physical inventory. Both contain the same reality.</p>
+                <p style={{ marginTop: '12px' }}>But the statements tell two different stories.</p>
+                <p style={{ marginTop: '12px' }}>She can read them now. Not just the numbers, but what the numbers mean. And what they leave out.</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.primary}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>In This Chapter</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>You'll review everything you've learned by reading Sofia's complete financial statements with full understanding. Then you'll reflect on what accounting shows, what it misses, and what it means to truly understand financial records.</p>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowCreativeNote(!showCreativeNote)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', border: 'none', background: colors.clayLight, color: colors.earthDark, cursor: 'pointer', fontSize: '14px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><InfoIcon /><span style={{ fontWeight: 500 }}>A Note on Creative Liberties</span></span>
+                    {showCreativeNote ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showCreativeNote && (
+                    <div style={{ marginTop: '8px', padding: '16px', borderRadius: '10px', background: 'white', border: `1px solid ${colors.earthLight}`, fontSize: '14px', color: colors.earthDark, lineHeight: 1.6 }}>
+                        <p style={{ marginBottom: '10px' }}>The financial statements shown here are simplified. Real statements include more line items, footnotes, and disclosures. Sofia's bucket of filters, her labor, her relationships with volunteers—all of these are real. The simplification lets you focus on the big picture: what records show, what they miss, and why those gaps matter.</p>
+                        <p style={{ fontStyle: 'italic' }}>This is fiction in service of teaching accounting concepts.</p>
+                    </div>
+                )}
+            </div>
+
+            <ContinueButton onClick={() => setPhase('clearcurrent')}>Begin Chapter</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: ClearCurrent ─────────────────────────────
+    const renderClearCurrent = () => {
+        const q1Options = [
+            { label: 'A: Equity is a residual determined by recorded assets and liabilities', value: 'A' },
+            { label: 'B: Equity is what Sofia would walk away with if she closed ClearCurrent', value: 'B' },
+            { label: 'C: All of ClearCurrent\'s economic assets are on this statement', value: 'C' },
+            { label: 'D: Every number on this statement got there by double-entry', value: 'D' },
+            { label: 'E: The filter design is the most important recorded asset', value: 'E' },
+        ];
+
+        const q1CorrectCount = Object.values(q1Selected).filter(v => v).length;
+
+        return (
+            <div className="fade-in">
+                <div style={s.card}>
+                    <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '10px' }}>ClearCurrent's Balance Sheet</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '14px' }}>November 30, 2025</p>
+
+                    <div style={s.statementCard}>
+                        <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Assets</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                            <span>Cash</span><span>$2,625</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                            <span>Inventory (filters at cost)</span><span>$280</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                            <span>Packaging supplies</span><span>$80</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '10px' }}>
+                            <span>Display stand</span><span>$50</span>
+                        </div>
+                        <div style={{ borderTop: `2px solid ${colors.earthLight}`, paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 600, color: colors.primary }}>
+                            <span>Total Assets</span><span>$3,035</span>
+                        </div>
+                    </div>
+
+                    <div style={{ ...s.statementCard, marginTop: '12px' }}>
+                        <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Liabilities</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                            <span>Credit card balance</span><span>$210</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                            <span>Website work payable</span><span>$300</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '10px' }}>
+                            <span>Filter parts payable</span><span>$400</span>
+                        </div>
+                        <div style={{ borderTop: `2px solid ${colors.earthLight}`, paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 600, color: colors.primary }}>
+                            <span>Total Liabilities</span><span>$910</span>
+                        </div>
+                    </div>
+
+                    <div style={{ ...s.statementCard, marginTop: '12px', background: '#fffbeb', borderColor: colors.accent }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 700 }}>
+                            <span style={{ color: colors.primary }}>Equity</span><span style={{ color: colors.accent }}>$2,125</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Q1 */}
+                <div style={s.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question:</span> Looking at ClearCurrent's balance sheet, which of the following are true?
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {q1Options.map(opt => {
+                            const isSelected = q1Selected[opt.value];
+                            const isCorrect = opt.value === 'A' || opt.value === 'D';
+                            let borderColor = colors.earthLight;
+                            let bg = 'white';
+                            if (isSelected) borderColor = colors.primary;
+                            if (q1Submitted) {
+                                if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                                else if (isSelected && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                            }
+                            return (
+                                <button key={opt.value} onClick={() => toggleQ1Option(opt.value)} disabled={q1Submitted}
+                                    style={{ padding: '12px 14px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q1Submitted ? 'default' : 'pointer', fontWeight: 500, fontSize: '14px', color: colors.textDark, textAlign: 'left', transition: 'all 0.15s' }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <input type="checkbox" checked={isSelected} readOnly style={{ cursor: 'pointer' }} />
+                                        {opt.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {!q1Submitted && (
+                        <button onClick={handleQ1Submit} style={{ ...s.btn, ...s.primaryBtn, marginTop: '14px', opacity: q1CorrectCount > 0 ? 1 : 0.5 }} disabled={q1CorrectCount === 0}>Check</button>
+                    )}
+
+                    {q1Attempts > 0 && q1Attempts < 3 && !q1Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q1Attempts}/2: </strong>
+                            {q1Attempts === 1 && "Remember what you learned in Chapter 6 about equity, and in Chapter 5 about double-entry. Which statements connect to those ideas?"}
+                            {q1Attempts === 2 && "Equity is a residual (that's what makes A true). Every number here came from double-entry (that's D). The filter design isn't recorded. Equity never equals walkaway value."}
+                        </div>
+                    )}
+
+                    {q1Submitted && q1Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. A and D. Equity is a residual, and every number got there through double-entry. The filter design isn't on the balance sheet.</div>
+                    )}
+
+                    {q1Submitted && q1Attempts >= 3 && (
+                        <div style={s.revealBox}><strong>A and D.</strong> Equity is a residual determined by assets and liabilities (A is true). Every number here got there by double-entry—that's how the system conveys information about what changed (D is true). The filter design isn't recorded (E is false). Equity rarely equals walkaway value (B is false). And not all assets are recorded (C is false).</div>
+                    )}
+                </div>
+
+                {q1Submitted && <ContinueButton onClick={() => setPhase('pureaccess')}>Continue to PureAccess</ContinueButton>}
+            </div>
+        );
+    };
+
+    // ─── PHASE: PureAccess ───────────────────────────────
+    const renderPureAccess = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '10px' }}>PureAccess's Statement of Financial Position</p>
+                <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '14px' }}>November 30, 2025</p>
+
+                <div style={s.statementCard}>
+                    <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Assets</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                        <span>Cash</span><span>$2,900</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                        <span>Inventory (remaining filters at cost)</span><span>$200</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '10px' }}>
+                        <span>Shipping supplies</span><span>$75</span>
+                    </div>
+                    <div style={{ borderTop: `2px solid ${colors.earthLight}`, paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 600, color: colors.primary }}>
+                        <span>Total Assets</span><span>$3,175</span>
+                    </div>
+                </div>
+
+                <div style={{ ...s.statementCard, marginTop: '12px' }}>
+                    <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Liabilities</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                        <span>Credit card balance</span><span>$275</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '4px' }}>
+                        <span>Volunteer reimbursement owed</span><span>$150</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', color: colors.textDark, marginBottom: '10px' }}>
+                        <span>Travel agency payable</span><span>$250</span>
+                    </div>
+                    <div style={{ borderTop: `2px solid ${colors.earthLight}`, paddingTop: '8px', display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 600, color: colors.primary }}>
+                        <span>Total Liabilities</span><span>$675</span>
+                    </div>
+                </div>
+
+                <div style={{ ...s.statementCard, marginTop: '12px', background: '#fffbeb', borderColor: colors.accent }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '15px', fontWeight: 700 }}>
+                        <span style={{ color: colors.primary }}>Net Assets</span><span style={{ color: colors.accent }}>$2,500</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Q2 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question:</span> PureAccess's records show $2,900 in cash and some inventory. The records do NOT show the foundation's community relationships, the volunteers' donated time, or the trust that enables distribution. Are PureAccess's records <em>wrong</em>?
+                </p>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {[
+                        { choice: 'wrong', label: 'Yes, they\'re wrong' },
+                        { choice: 'incomplete', label: 'No, they\'re incomplete' }
+                    ].map(opt => {
+                        const isThis = q2Choice === opt.choice;
+                        const isCorrect = opt.choice === 'incomplete';
+                        let borderColor = isThis ? colors.primary : colors.earthLight;
+                        let bg = isThis ? '#eef3fa' : 'white';
+                        if (q2Submitted) {
+                            if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                            else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                        }
+                        return (
+                            <button key={opt.choice} onClick={() => handleQ2(opt.choice)} disabled={q2Submitted}
+                                style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q2Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '15px', color: colors.textDark }}>
+                                {opt.label}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {q2Attempts > 0 && q2Attempts < 3 && !q2Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q2Attempts}/2: </strong>
+                        {q2Attempts === 1 && "Are the numbers that are recorded — the $2,900 in cash, the liabilities — accurate?"}
+                        {q2Attempts === 2 && "The records accurately show what has been recorded. The issue isn't accuracy. It's scope. The system was designed to record certain things and leaves others out."}
+                    </div>
+                )}
+
+                {q2Submitted && q2Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. The records aren't wrong—they're incomplete. The cash balance is accurate. The liabilities are real. What the records miss is a consequence of how the system was designed.</div>
+                )}
+
+                {q2Submitted && q2Attempts >= 3 && (
+                    <div style={s.revealBox}>The records aren't wrong—they're incomplete. The cash, the inventory costs, the liabilities—all accurate. But the system was designed to capture some things and not others. It shows what has been recorded; it doesn't show the community relationships, volunteer labor, or trust that Sofia's work depends on.</div>
+                )}
+            </div>
+
+            {q2Submitted && <ContinueButton onClick={() => setPhase('integration')}>Continue</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Integration ──────────────────────────────
+    const renderIntegration = () => (
+        <div className="fade-in">
+            <div style={s.narrativeBlock}>
+                <p>Sofia closes her laptop and looks at the bucket of filters on her garage shelf. The same bucket.</p>
+                <p style={{ marginTop: '12px' }}>When she opens ClearCurrent's books, that bucket is inventory for sale. When she opens PureAccess's books, that bucket contains supplies for distribution to communities. But the bucket is just a bucket.</p>
+                <p style={{ marginTop: '12px' }}>The records say different things about the same reality.</p>
+            </div>
+
+            {/* Q3 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question:</span> You've now seen accounting from the inside—you built the system, learned the names, tested the limits, and found the gaps. In your own words: what is accounting good at, and what does it miss?
+                </p>
+
+                <textarea
+                    value={q3Answer}
+                    onChange={e => setQ3Answer(e.target.value)}
+                    disabled={q3Submitted}
+                    placeholder="Your reflection..."
+                    rows={4}
+                    style={{ width: '100%', padding: '12px', border: `2px solid ${q3Submitted ? colors.success : colors.earthLight}`, borderRadius: '10px', fontSize: '14px', fontFamily: 'inherit', resize: 'none' }}
+                />
+
+                {!q3Submitted && (
+                    <button onClick={handleQ3Submit} disabled={q3Answer.trim().length < 20}
+                        style={{ ...s.btn, ...s.primaryBtn, marginTop: '14px', opacity: q3Answer.trim().length >= 20 ? 1 : 0.5 }}>Submit Reflection</button>
+                )}
+
+                {q3Submitted && (
+                    <div style={s.successBox} className="fade-in">
+                        <span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Thank you. Your answer captures something real. Accounting is powerful—it tracks resources, organizes information, and uses double-entry to show what changed and why. But the system was built by people, for purposes, with trade-offs. It shows what has been recorded; the entity has a richer reality. Understanding those boundaries is what separates reading financial statements from understanding them.
+                    </div>
+                )}
+            </div>
+
+            {q3Submitted && <ContinueButton onClick={() => setPhase('complete')}>See the Complete Picture</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Complete ─────────────────────────────────
+    const renderComplete = () => (
+        <div className="fade-in">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '90px', height: '90px', borderRadius: '50%', background: colors.accent, marginBottom: '14px' }}><TrophyIcon /></div>
+                <h2 style={{ color: colors.primary, fontSize: '24px', fontWeight: 700 }}>Sofia's Story Complete</h2>
+                <p style={{ color: colors.textMuted, fontSize: '15px', marginTop: '6px' }}>8 chapters. From a messy notebook to reading financial statements with understanding.</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.success}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '12px' }}>What You Discovered</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {[
+                        'ClearCurrent and PureAccess tell two different stories about the same reality — both are accurate, both are incomplete',
+                        'Equity and Net Assets are residuals, not independent calculations',
+                        'Every number on the financial statements got there by double-entry, conveying information about what changed and why',
+                        'The records show what has been recorded; the entity has a richer, more complex reality',
+                        'Accounting is a human-designed system — powerful, useful, and shaped by the choices of those who built it',
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '14px', color: colors.earthDark }}>
+                            <span style={{ color: colors.success, flexShrink: 0, marginTop: '2px' }}>✓</span><span>{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div style={s.insightBox}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>The Deeper Point</p>
+                <p>Sofia closes her laptop and looks at the bucket on the shelf. The records say different things about that bucket depending on which entity's books you open. But the bucket is just a bucket. Accounting is a lens for seeing financial reality—not the reality itself. It was designed by people, for purposes, with trade-offs. Understanding those trade-offs is what separates someone who reads financial statements from someone who understands them.</p>
+            </div>
+
+            <div style={{ ...s.card, background: colors.clayLight, textAlign: 'center', padding: '24px' }}>
+                <p style={{ fontWeight: 700, color: colors.primary, fontSize: '18px', marginBottom: '8px' }}>The Journey</p>
+                <p style={{ fontSize: '15px', color: colors.earthDark, lineHeight: 1.6 }}>
+                    Chapter 1 began with Sofia's messy notebook. Eight chapters later, you can sit with two sets of financial statements and understand not just the numbers, but what they mean—and what they leave out.
+                </p>
+                <p style={{ fontSize: '14px', color: colors.textMuted, marginTop: '12px', fontStyle: 'italic' }}>
+                    This journey is complete. But your understanding of accounting is just beginning.
+                </p>
+            </div>
+
+            <button onClick={handleRestart} style={{ ...s.btn, ...s.outlineBtn, marginTop: '16px' }}><RestartIcon /> Restart From Chapter 1</button>
+        </div>
+    );
+
+    // ─── Render ──────────────────────────────────────────
+    const renderPhase = () => {
+        switch (phase) {
+            case 'welcome': return renderWelcome();
+            case 'clearcurrent': return renderClearCurrent();
+            case 'pureaccess': return renderPureAccess();
+            case 'integration': return renderIntegration();
+            case 'complete': return renderComplete();
+            default: return null;
+        }
+    };
+
+    return (
+        <div style={s.container}>
+            <Header />
+            <main style={s.main}>{renderPhase()}</main>
+            {showGlossary && <GlossaryModal />}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Chapter8 />);
+    </script>
+</body>
+</html>

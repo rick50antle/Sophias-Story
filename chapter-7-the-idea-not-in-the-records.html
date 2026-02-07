@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 7: The Idea That Is Not in the Records | Sofia's Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Sans 3', sans-serif; background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%); min-height: 100vh; }
+        .narrative-font { font-family: 'Cormorant Garamond', serif; }
+        input:focus, textarea:focus, button:focus { outline: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+/**
+ * Chapter 7: The Idea That Is Not in the Records
+ * Sofia's Story — Accounting Chapter Series
+ *
+ * @version 1.0
+ * @date 2026-02-07
+ * @description The critical perspective chapter. Sofia looks at her books and searches for the
+ *   filter design — the thing that makes both entities possible. It's not there. The learner
+ *   explores five reasons why certain economic assets are excluded from the records, understanding
+ *   that accounting is human-designed with embedded interests.
+ *   Covers Arc Phase 8.
+ */
+
+const { useState } = React;
+
+// ─── Color Palette ───────────────────────────────────────────
+const colors = {
+    primary: '#00356b', primaryLight: '#1a4a7a',
+    sand: '#f5f1e8', sandLight: '#faf8f3',
+    earth: '#8b7355', earthLight: '#d4c4a8', earthDark: '#5c4d3d',
+    accent: '#c9a227', accentWarm: '#d4a84b',
+    textDark: '#2c2416', textMuted: '#6b5d4d',
+    clay: '#c4a574', clayLight: '#e8dcc8', clayDark: '#a08050',
+    success: '#22c55e', successBg: '#f0fdf4',
+    warning: '#f59e0b', warningBg: '#fffbeb',
+    error: '#dc2626', errorBg: '#fef2f2',
+    insight: '#fef9e7', insightBorder: '#c9a227',
+};
+
+// ─── Sound Functions ─────────────────────────────────────────
+const createAudioContext = () => new (window.AudioContext || window.webkitAudioContext)();
+const playSuccessTone = () => { try { const ctx = createAudioContext(); [523.25,659.25,783.99].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.1; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.15); o.start(t);o.stop(t+0.25); }); setTimeout(()=>ctx.close(),600); } catch(e){} };
+const playSoftNope = () => { try { const ctx = createAudioContext(); [400,300].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.12; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.12); o.start(t);o.stop(t+0.17); }); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playBuzzer = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=150;o.type='sawtooth'; const t=ctx.currentTime; g.gain.setValueAtTime(0.25,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.3); o.start(t);o.stop(t+0.35); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playContinueClick = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=600;o.type='sine'; const t=ctx.currentTime; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.01,t+0.08); o.start(t);o.stop(t+0.1); setTimeout(()=>ctx.close(),150); } catch(e){} };
+
+// ─── SVG Icons ───────────────────────────────────────────────
+const ChevronRight = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>);
+const ChevronDown = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>);
+const ChevronUp = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>);
+const BookIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>);
+const RestartIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>);
+const InfoIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>);
+const TrophyIcon = () => (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>);
+const CheckCircleIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>);
+
+// ─── Balance Sheet Data ───────────────────────────────────────
+const balanceSheetAssets = [
+    { item: 'Cash in bank', amount: '$2,625', recorded: true },
+    { item: 'The biodegradable filter design', amount: '???', recorded: false },
+    { item: 'Inventory of filters (32 units)', amount: '$1,280', recorded: true },
+    { item: 'Sofia\'s engineering expertise', amount: '???', recorded: false },
+    { item: 'Display stand', amount: '$85', recorded: true },
+    { item: 'Relationship with the community center', amount: '???', recorded: false },
+    { item: 'Packaging supplies', amount: '$160', recorded: true },
+    { item: 'Maya\'s network of supporters', amount: '???', recorded: false },
+];
+
+// ─── Main Component ──────────────────────────────────────────
+function Chapter7() {
+    const phaseOrder = ['welcome', 'search', 'naming', 'why1', 'why2', 'synthesis', 'complete'];
+    const [phase, setPhase] = useState('welcome');
+
+    // UI state
+    const [showGlossary, setShowGlossary] = useState(false);
+    const [showCreativeNote, setShowCreativeNote] = useState(false);
+    const [showPreamble, setShowPreamble] = useState(false);
+    const [devMode, setDevMode] = useState(false);
+    const [headerClickCount, setHeaderClickCount] = useState(0);
+
+    // Q1: Multi-select (which items are recorded)
+    const [q1Selected, setQ1Selected] = useState(new Set());
+    const [q1Submitted, setQ1Submitted] = useState(false);
+    const [q1Attempts, setQ1Attempts] = useState(0);
+
+    // Q2: Open reflection
+    const [q2Answer, setQ2Answer] = useState('');
+    const [q2Submitted, setQ2Submitted] = useState(false);
+
+    // Q3: Two-choice (difficulty of quantification)
+    const [q3Choice, setQ3Choice] = useState(null);
+    const [q3Submitted, setQ3Submitted] = useState(false);
+    const [q3Attempts, setQ3Attempts] = useState(0);
+
+    // Q4: Two-choice (if purchased)
+    const [q4Choice, setQ4Choice] = useState(null);
+    const [q4Submitted, setQ4Submitted] = useState(false);
+    const [q4Attempts, setQ4Attempts] = useState(0);
+
+    // Q5: Two-choice (managerial preference)
+    const [q5Choice, setQ5Choice] = useState(null);
+    const [q5Submitted, setQ5Submitted] = useState(false);
+    const [q5Attempts, setQ5Attempts] = useState(0);
+
+    // Q6: Two-choice (alternative rules)
+    const [q6Choice, setQ6Choice] = useState(null);
+    const [q6Submitted, setQ6Submitted] = useState(false);
+    const [q6Attempts, setQ6Attempts] = useState(0);
+
+    // Q7: Open reflection
+    const [q7Answer, setQ7Answer] = useState('');
+    const [q7Submitted, setQ7Submitted] = useState(false);
+
+    // Progress
+    const currentPhaseIndex = phaseOrder.indexOf(phase);
+    const progress = Math.round((currentPhaseIndex / (phaseOrder.length - 1)) * 100);
+
+    const handleHeaderClick = () => {
+        const n = headerClickCount + 1;
+        setHeaderClickCount(n);
+        if (n >= 3) { setDevMode(!devMode); setHeaderClickCount(0); }
+    };
+
+    const handleRestart = () => {
+        playContinueClick(); setPhase('welcome');
+        setShowCreativeNote(false);
+        setQ1Selected(new Set()); setQ1Submitted(false); setQ1Attempts(0);
+        setQ2Answer(''); setQ2Submitted(false);
+        setQ3Choice(null); setQ3Submitted(false); setQ3Attempts(0);
+        setQ4Choice(null); setQ4Submitted(false); setQ4Attempts(0);
+        setQ5Choice(null); setQ5Submitted(false); setQ5Attempts(0);
+        setQ6Choice(null); setQ6Submitted(false); setQ6Attempts(0);
+        setQ7Answer(''); setQ7Submitted(false);
+    };
+
+    // Q1 handler
+    const toggleQ1 = (itemIndex) => {
+        if (q1Submitted) return;
+        const newSet = new Set(q1Selected);
+        if (newSet.has(itemIndex)) newSet.delete(itemIndex);
+        else newSet.add(itemIndex);
+        setQ1Selected(newSet);
+    };
+
+    const handleQ1Submit = () => {
+        const correctAnswers = new Set([0, 2, 4, 6]); // A, C, E, G
+        const isCorrect = q1Selected.size === correctAnswers.size &&
+                         [...q1Selected].every(i => correctAnswers.has(i));
+        if (isCorrect) {
+            playSuccessTone(); setQ1Submitted(true);
+        } else {
+            const n = q1Attempts + 1; setQ1Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ1Submitted(true); setQ1Selected(correctAnswers); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q2 handler
+    const handleQ2Submit = () => {
+        if (q2Answer.trim().length > 10) {
+            playSuccessTone(); setQ2Submitted(true);
+        } else {
+            playSoftNope();
+        }
+    };
+
+    // Q3 handler
+    const handleQ3 = (choice) => {
+        if (q3Submitted) return;
+        setQ3Choice(choice);
+        if (choice === 'no') {
+            playSuccessTone(); setQ3Submitted(true);
+        } else {
+            const n = q3Attempts + 1; setQ3Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ3Submitted(true); setQ3Choice('no'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q4 handler
+    const handleQ4 = (choice) => {
+        if (q4Submitted) return;
+        setQ4Choice(choice);
+        if (choice === 'yes') {
+            playSuccessTone(); setQ4Submitted(true);
+        } else {
+            const n = q4Attempts + 1; setQ4Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ4Submitted(true); setQ4Choice('yes'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q5 handler
+    const handleQ5 = (choice) => {
+        if (q5Submitted) return;
+        setQ5Choice(choice);
+        if (choice === 'yes') {
+            playSuccessTone(); setQ5Submitted(true);
+        } else {
+            const n = q5Attempts + 1; setQ5Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ5Submitted(true); setQ5Choice('yes'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q6 handler
+    const handleQ6 = (choice) => {
+        if (q6Submitted) return;
+        setQ6Choice(choice);
+        if (choice === 'no') {
+            playSuccessTone(); setQ6Submitted(true);
+        } else {
+            const n = q6Attempts + 1; setQ6Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ6Submitted(true); setQ6Choice('no'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q7 handler
+    const handleQ7Submit = () => {
+        if (q7Answer.trim().length > 10) {
+            playSuccessTone(); setQ7Submitted(true);
+        } else {
+            playSoftNope();
+        }
+    };
+
+    // ─── Styles ─────────────────────────────────────────
+    const s = {
+        container: { minHeight: '100vh', background: `linear-gradient(135deg, ${colors.sandLight} 0%, ${colors.sand} 100%)` },
+        main: { padding: '16px', maxWidth: '720px', margin: '0 auto' },
+        card: { background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+        narrativeBlock: { padding: '20px', borderRadius: '12px', borderLeft: `4px solid ${colors.accent}`, background: colors.sand, marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.7, color: colors.textDark, fontStyle: 'italic' },
+        btn: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' },
+        primaryBtn: { background: colors.primary, color: 'white' },
+        outlineBtn: { background: 'transparent', border: `2px solid ${colors.primary}`, color: colors.primary },
+        hintBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        successBox: { padding: '14px', borderRadius: '10px', background: colors.successBg, border: `1px solid ${colors.success}`, marginTop: '10px', fontSize: '14px', color: '#166534' },
+        revealBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, border: `1px solid ${colors.warning}`, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        insightBox: { padding: '20px', borderRadius: '12px', border: `2px solid ${colors.accent}`, background: colors.insight, marginBottom: '16px', fontSize: '15px', color: colors.earthDark, lineHeight: 1.6 },
+    };
+
+    // ─── Header ─────────────────────────────────────────
+    const Header = () => (
+        <div style={{ background: colors.primary, borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: '17px' }}>Chapter 7: The Idea That Is Not in the Records</span>
+                    <p style={{ color: colors.earthLight, fontSize: '13px', marginTop: '4px' }}>Sofia's Story &bull; ~20 min</p>
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    <button onClick={() => setShowGlossary(true)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Glossary"><BookIcon /></button>
+                    <button onClick={handleRestart} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Restart"><RestartIcon /></button>
+                </div>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}><span>Progress</span><span>{progress}%</span></div>
+                <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.2)' }}>
+                    <div style={{ height: '100%', borderRadius: '4px', background: colors.accent, width: `${progress}%`, transition: 'width 0.5s ease' }} />
+                </div>
+            </div>
+            {devMode && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>Dev Mode: Skip to phase</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {phaseOrder.map(p => (<button key={p} onClick={() => setPhase(p)} style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', fontSize: '12px', cursor: 'pointer', background: phase === p ? 'white' : 'rgba(255,255,255,0.2)', color: phase === p ? colors.primary : 'white' }}>{p}</button>))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // ─── Glossary ────────────────────────────────────────
+    const GlossaryModal = () => (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ background: 'white', borderRadius: '16px', maxWidth: '420px', width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+                <div style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', borderRadius: '16px 16px 0 0' }}>
+                    <strong style={{ color: colors.primary }}>Glossary</strong>
+                    <button onClick={() => setShowGlossary(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>&times;</button>
+                </div>
+                <div style={{ padding: '16px' }}>
+                    {[
+                        { term: 'Cash receipts and disbursements journal', def: 'A record that separates cash inflows (receipts) from cash outflows (disbursements). The structure you built in Chapter 2.' },
+                        { term: 'Accounting entity', def: 'A distinct economic unit \u2014 person, organization, or project \u2014 whose records are kept separate from all other entities. The boundary is a convention, chosen for purposes.' },
+                        { term: 'Debits and credits', def: 'The two sides of every accounting entry. Debits record one type of change; credits record the other.' },
+                        { term: 'Accounting identity', def: 'Assets \u2212 Liabilities = Equity (for-profit) or Net Assets (nonprofit). A framework for organizing financial information, not a formula.' },
+                        { term: 'Equity', def: 'The residual in a for-profit entity \u2014 mathematically determined by recorded assets and liabilities. Almost never what the owner would walk away with.' },
+                        { term: 'Net Assets', def: 'The residual in a nonprofit entity \u2014 the recorded net resources available to pursue the mission.' },
+                        { term: 'Double-entry', def: 'A recording system where every entry touches two things, conveying information about what changed and why.' },
+                        { term: 'Recognition', def: 'The process by which something enters the accounting records. Not everything with economic benefit gets recognized.' },
+                        { term: 'Intangible assets', def: 'Assets without physical substance \u2014 designs, expertise, relationships, reputation. Many are never recorded.' },
+                    ].map((item, i) => (
+                        <div key={i} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: i < 8 ? `1px solid ${colors.earthLight}` : 'none' }}>
+                            <p style={{ fontWeight: 600, color: colors.primary, fontSize: '14px', marginBottom: '4px' }}>{item.term}</p>
+                            <p style={{ fontSize: '13px', color: colors.textMuted, lineHeight: 1.5 }}>{item.def}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
+    const ContinueButton = ({ onClick, children = "Continue" }) => (
+        <button onClick={() => { playContinueClick(); onClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '16px' }}>{children} <ChevronRight /></button>
+    );
+
+    // ─── PHASE: Welcome ──────────────────────────────────
+    const renderWelcome = () => (
+        <div className="fade-in">
+            {/* Story So Far — optional preamble */}
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowPreamble(!showPreamble)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '12px', border: 'none', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, color: colors.earthDark, cursor: 'pointer', fontSize: '15px', textAlign: 'left' }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontStyle: 'italic' }}>The story so far&hellip;</span>
+                    {showPreamble ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showPreamble && (
+                    <div style={{ marginTop: '8px', padding: '20px', borderRadius: '12px', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.8, color: colors.textDark }}>
+                        <p>Sofia had come a long way from the shoebox and the messy journal. She had a working system now&thinsp;&mdash;&thinsp;cash journals, entity separation, two-sided records, formal names for everything. But something nagged at her.</p>
+                        <p style={{ marginTop: '14px' }}>When she made her first lists for each organization, she had written down "the great idea" as the most important item for both. For ClearCurrent, she noted "Who knows?" for the dollar amount. For PureAccess, she wrote, "Hard to put a dollar value on this." She called it the start of the whole thing.</p>
+                        <p style={{ marginTop: '14px' }}>And it was. Without that moment of inspiration on the trail, none of the rest would exist&thinsp;&mdash;&thinsp;not the prototypes, not the sales, not the grant money, nothing. The filter design, the engineering expertise, the relationships she was building with communities and supporters&thinsp;&mdash;&thinsp;these were the real foundations of both enterprises. But Sofia could not figure out how to assign any of it a dollar value in her records.</p>
+                        <p style={{ marginTop: '14px' }}>She was looking at the central tension of accounting without knowing it.</p>
+                    </div>
+                )}
+            </div>
+
+            <div style={s.narrativeBlock}>
+                <p>Sofia looks at her books and goes searching for the filter design. The thing that makes both ClearCurrent and PureAccess possible. The thing that earned them their first grant. The thing that is, right now, their only asset that matters.</p>
+                <p style={{ marginTop: '12px' }}>It's not there.</p>
+                <p style={{ marginTop: '12px' }}>Neither is Maya's network. Neither is Sofia's engineering expertise. Neither is the trust that got them this far. The most important things Sofia has are nowhere in the records.</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.primary}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>In This Chapter</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>You'll look for what's missing from the records and explore why the system leaves certain things out.</p>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowCreativeNote(!showCreativeNote)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', border: 'none', background: colors.clayLight, color: colors.earthDark, cursor: 'pointer', fontSize: '14px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><InfoIcon /><span style={{ fontWeight: 500 }}>A Note on Creative Liberties</span></span>
+                    {showCreativeNote ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showCreativeNote && (
+                    <div style={{ marginTop: '8px', padding: '16px', borderRadius: '10px', background: 'white', border: `1px solid ${colors.earthLight}`, fontSize: '14px', color: colors.earthDark, lineHeight: 1.6 }}>
+                        <p style={{ marginBottom: '10px' }}>The five reasons for exclusion are presented as distinct questions. In practice, these factors overlap and interact — the exclusion of intangible assets results from decades of standard-setting debate involving all five factors simultaneously.</p>
+                        <p style={{ fontStyle: 'italic' }}>This is fiction in service of teaching accounting concepts.</p>
+                    </div>
+                )}
+            </div>
+
+            <ContinueButton onClick={() => setPhase('search')}>Begin Chapter</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Search ──────────────────────────────────
+    const renderSearch = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '14px' }}>ClearCurrent's Balance Sheet Assets</p>
+                <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '16px' }}>Here's what Sofia recorded. Tap each item to mark it as recorded or not recorded.</p>
+
+                {balanceSheetAssets.map((asset, idx) => {
+                    const isSelected = q1Selected.has(idx);
+                    const isCorrect = asset.recorded;
+                    let borderColor = colors.earthLight;
+                    let bg = 'white';
+
+                    if (q1Submitted) {
+                        if (isSelected === isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                        else if (isSelected && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                    } else if (isSelected) {
+                        borderColor = colors.primary;
+                        bg = '#eef3fa';
+                    }
+
+                    return (
+                        <button key={idx} onClick={() => toggleQ1(idx)} disabled={q1Submitted}
+                            style={{ width: '100%', padding: '14px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q1Submitted ? 'default' : 'pointer', marginBottom: '10px', textAlign: 'left', transition: 'all 0.15s' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '4px', fontSize: '15px' }}>{asset.item}</p>
+                                    <p style={{ fontSize: '14px', color: colors.textMuted }}>{asset.amount}</p>
+                                </div>
+                                <div style={{ fontSize: '18px', color: isSelected ? colors.primary : colors.textMuted, marginLeft: '12px' }}>
+                                    {isSelected ? '✓' : '○'}
+                                </div>
+                            </div>
+                        </button>
+                    );
+                })}
+            </div>
+
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question 1:</span> Which of these items appear on the balance sheet as recorded assets?
+                </p>
+
+                {!q1Submitted && (
+                    <button onClick={handleQ1Submit} style={{ ...s.btn, ...s.primaryBtn }}>
+                        Check ({q1Selected.size} selected)
+                    </button>
+                )}
+
+                {q1Attempts > 0 && q1Attempts < 3 && !q1Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q1Attempts}/2: </strong>
+                        {q1Attempts === 1 && "Look at the balance sheet. Which items have a dollar amount recorded next to them?"}
+                        {q1Attempts === 2 && "The balance sheet records things that entered through a transaction — something purchased, deposited, or received. Things that grew organically (expertise, relationships, designs) aren't there."}
+                    </div>
+                )}
+
+                {q1Submitted && q1Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}>✓</span> Correct. A, C, E, G are recorded. B, D, F, H are not.</div>
+                )}
+
+                {q1Submitted && q1Attempts >= 3 && (
+                    <div style={s.revealBox}><strong>A, C, E, G</strong> (Cash, Inventory, Display stand, Packaging) are recorded. <strong>B, D, F, H</strong> (Filter design, Sofia's expertise, Community relationship, Maya's network) are not.</div>
+                )}
+            </div>
+
+            {q1Submitted && (
+                <div style={s.insightBox}>
+                    <p>The filter design — without which ClearCurrent has nothing to sell and PureAccess has nothing to distribute — is not in the records. Neither is Sofia's expertise, Maya's network, or PureAccess's reputation. The records <em>show</em> recorded assets; the entity <em>has</em> economic assets that extend far beyond what is recorded.</p>
+                </div>
+            )}
+
+            {q1Submitted && (
+                <div style={s.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question 2:</span> Sofia noticed this gap back in her September 20 journal entry — before she knew any accounting. She wrote: "The filter design is the real asset. But there's no line for it anywhere in my records." Why do you think the design isn't recorded?
+                    </p>
+
+                    <textarea value={q2Answer} onChange={e => setQ2Answer(e.target.value)} disabled={q2Submitted} placeholder="Your thoughts..." rows={3} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: `2px solid ${colors.earthLight}`, fontFamily: "'Source Sans 3', sans-serif", fontSize: '14px', resize: 'none' }} />
+
+                    {!q2Submitted && (
+                        <button onClick={handleQ2Submit} disabled={q2Answer.trim().length < 10} style={{ ...s.btn, ...s.primaryBtn, marginTop: '12px', opacity: q2Answer.trim().length >= 10 ? 1 : 0.5 }}>
+                            Submit
+                        </button>
+                    )}
+
+                    {q2Submitted && (
+                        <div style={s.successBox}>
+                            <span style={{ color: colors.success, marginRight: '6px' }}>✓</span> That's the question this chapter explores. The answer isn't simple — and it involves choices made by people, not just technical limitations.
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {q2Submitted && <ContinueButton onClick={() => setPhase('naming')}>Continue</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Naming ──────────────────────────────────
+    const renderNaming = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '12px', fontSize: '15px' }}>The Process Has a Name</p>
+
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6, marginBottom: '14px' }}>
+                    The process by which something enters the accounting records has a name: <strong>recognition</strong>. Sofia's filter design hasn't gone through that process — not because it lacks economic benefit, but because the accounting system hasn't recorded it.
+                </p>
+
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6, marginBottom: '14px' }}>
+                    Assets without physical substance — like designs, expertise, relationships, reputation — are called <strong>intangible assets</strong>. Many are never recorded.
+                </p>
+
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>
+                    But why? If the filter design provides enormous economic benefit to both entities, why doesn't the system record it? That's what we're about to explore.
+                </p>
+            </div>
+
+            <ContinueButton onClick={() => setPhase('why1')}>Continue</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Why1 ────────────────────────────────────
+    const renderWhy1 = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question 3:</span> Three accountants try to assign a number to the filter design. One says $50,000 (future sales). One says $0 (no purchase price). One says $5,000 (development costs). Does the difficulty of assigning a number fully explain why the design isn't recorded?
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {['yes', 'no'].map(choice => {
+                        const isThis = q3Choice === choice;
+                        const isCorrect = choice === 'no';
+                        let borderColor = isThis ? colors.primary : colors.earthLight;
+                        let bg = isThis ? '#eef3fa' : 'white';
+                        if (q3Submitted) {
+                            if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                            else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                        }
+                        return (
+                            <button key={choice} onClick={() => handleQ3(choice)} disabled={q3Submitted}
+                                style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q3Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '16px', color: colors.textDark, textTransform: 'capitalize' }}>
+                                {choice === 'yes' ? 'Yes, that\'s it' : 'No, there\'s more'}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {q3Attempts > 0 && q3Attempts < 3 && !q3Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q3Attempts}/2: </strong>
+                        {q3Attempts === 1 && "Accountants make difficult estimations all the time — depreciation schedules, bad debt allowances, warranty provisions. Difficulty alone doesn't stop something from being recorded."}
+                        {q3Attempts === 2 && "If difficulty of quantification were a complete explanation, accountants would never record anything uncertain. But they do — constantly."}
+                    </div>
+                )}
+
+                {q3Submitted && q3Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}>✓</span> Right. Difficulty of quantification is part of the story, but not all of it.</div>
+                )}
+
+                {q3Submitted && q3Attempts >= 3 && (
+                    <div style={s.revealBox}>No — difficulty of quantification is part of the story, but not all of it. Accountants routinely make estimations involving enormous judgment. Something else must also be at work.</div>
+                )}
+            </div>
+
+            {q3Submitted && (
+                <div style={s.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question 4:</span> If a competitor had invented the same filter and Sofia bought the patent for $10,000, would the design be recorded?
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        {['no', 'yes'].map(choice => {
+                            const isThis = q4Choice === choice;
+                            const isCorrect = choice === 'yes';
+                            let borderColor = isThis ? colors.primary : colors.earthLight;
+                            let bg = isThis ? '#eef3fa' : 'white';
+                            if (q4Submitted) {
+                                if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                                else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                            }
+                            return (
+                                <button key={choice} onClick={() => handleQ4(choice)} disabled={q4Submitted}
+                                    style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q4Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '16px', color: colors.textDark, textTransform: 'capitalize' }}>
+                                    {choice === 'no' ? 'No' : 'Yes'}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {q4Attempts > 0 && q4Attempts < 3 && !q4Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q4Attempts}/2: </strong>
+                            {q4Attempts === 1 && "Think about what changed. The design is the same — but now there's a purchase price."}
+                            {q4Attempts === 2 && "A purchase creates a transaction amount. That gives the system an entry point."}
+                        </div>
+                    )}
+
+                    {q4Submitted && q4Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}>✓</span> Yes — if Sofia bought the patent, the $10,000 purchase price would be recorded as an intangible asset.</div>
+                    )}
+
+                    {q4Submitted && q4Attempts >= 3 && (
+                        <div style={s.revealBox}>Yes — if Sofia bought the patent, the $10,000 purchase price would be recorded. The design hasn't changed. The only difference is a transaction. The system records purchased intangibles but not internally developed ones. Is that a neutral technical choice, or does it reflect something about who designed the rules?</div>
+                    )}
+                </div>
+            )}
+
+            {q4Submitted && <ContinueButton onClick={() => setPhase('why2')}>Continue</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Why2 ────────────────────────────────────
+    const renderWhy2 = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question 5:</span> Could managers prefer to keep some things off the books? If ClearCurrent's filter design were recorded at $50,000, that $50,000 would be visible to investors, creditors, and regulators. If it's not recorded, no one can scrutinize the number.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {['no', 'yes'].map(choice => {
+                        const isThis = q5Choice === choice;
+                        const isCorrect = choice === 'yes';
+                        let borderColor = isThis ? colors.primary : colors.earthLight;
+                        let bg = isThis ? '#eef3fa' : 'white';
+                        if (q5Submitted) {
+                            if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                            else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                        }
+                        return (
+                            <button key={choice} onClick={() => handleQ5(choice)} disabled={q5Submitted}
+                                style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q5Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '15px', color: colors.textDark, lineHeight: 1.3 }}>
+                                {choice === 'no' ? 'No, managers would want them recorded' : 'Yes, less recorded means less scrutiny'}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {q5Attempts > 0 && q5Attempts < 3 && !q5Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q5Attempts}/2: </strong>
+                        {q5Attempts === 1 && "Think about what recording forces: a number, an audit, questions about whether that number is right."}
+                        {q5Attempts === 2 && "Some managers might prefer that their most important assets stay invisible — less disclosure, less scrutiny, more flexibility."}
+                    </div>
+                )}
+
+                {q5Submitted && q5Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}>✓</span> Yes. Less recorded means less scrutiny. Not all managers feel this way, but the option to keep certain assets unrecorded can serve managerial interests.</div>
+                )}
+
+                {q5Submitted && q5Attempts >= 3 && (
+                    <div style={s.revealBox}>Yes — less recorded means less scrutiny. The option to keep certain assets unrecorded can serve managerial interests.</div>
+                )}
+            </div>
+
+            {q5Submitted && (
+                <div style={s.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question 6:</span> The rules for what gets recorded are set by standard-setters — committees of people representing different interests. Given these competing pressures, are the current rules the only possible rules?
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        {['yes', 'no'].map(choice => {
+                            const isThis = q6Choice === choice;
+                            const isCorrect = choice === 'no';
+                            let borderColor = isThis ? colors.primary : colors.earthLight;
+                            let bg = isThis ? '#eef3fa' : 'white';
+                            if (q6Submitted) {
+                                if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                                else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                            }
+                            return (
+                                <button key={choice} onClick={() => handleQ6(choice)} disabled={q6Submitted}
+                                    style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q6Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '16px', color: colors.textDark, textTransform: 'capitalize' }}>
+                                    {choice === 'yes' ? 'Yes' : 'No'}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {q6Attempts > 0 && q6Attempts < 3 && !q6Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q6Attempts}/2: </strong>
+                            {q6Attempts === 1 && "Think about what 'standard-setting' means. A committee chose these rules."}
+                            {q6Attempts === 2 && "Different committees in different countries at different times have chosen different rules. The system could have been designed to record internally generated intangibles."}
+                        </div>
+                    )}
+
+                    {q6Submitted && q6Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}>✓</span> No — the rules could be different. In some countries, they are.</div>
+                    )}
+
+                    {q6Submitted && q6Attempts >= 3 && (
+                        <div style={s.revealBox}>No — the rules could be different. The exclusion of internally generated intangibles is one outcome of decades of argument between people with different stakes. It's a human choice, not a law of nature.</div>
+                    )}
+                </div>
+            )}
+
+            {q6Submitted && <ContinueButton onClick={() => setPhase('synthesis')}>Continue</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Synthesis ────────────────────────────────
+    const renderSynthesis = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question 7:</span> You've now seen five reasons the filter design isn't recorded: difficulty of quantification, absence of a transaction, possible managerial preference for opacity, cost-benefit calculations, and rules reflecting compromises. No single reason is sufficient. In your own words: is the exclusion of Sofia's filter design from the records a technical limitation, or something more?
+                </p>
+
+                <textarea value={q7Answer} onChange={e => setQ7Answer(e.target.value)} disabled={q7Submitted} placeholder="Your thoughts..." rows={3} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: `2px solid ${colors.earthLight}`, fontFamily: "'Source Sans 3', sans-serif", fontSize: '14px', resize: 'none' }} />
+
+                {!q7Submitted && (
+                    <button onClick={handleQ7Submit} disabled={q7Answer.trim().length < 10} style={{ ...s.btn, ...s.primaryBtn, marginTop: '12px', opacity: q7Answer.trim().length >= 10 ? 1 : 0.5 }}>
+                        Submit
+                    </button>
+                )}
+
+                {q7Submitted && (
+                    <div style={s.successBox}>
+                        <span style={{ color: colors.success, marginRight: '6px' }}>✓</span> It's both — and more. The exclusion involves genuine technical difficulty, but also human choices about what to record, made by people with interests, in a system that could have been built differently. The accounting system is human-designed. It's powerful and useful. But it was never meant to capture everything. The records <em>show</em> recorded assets; the entity <em>has</em> economic assets that extend far beyond.
+                    </div>
+                )}
+            </div>
+
+            {q7Submitted && <ContinueButton onClick={() => setPhase('complete')}>Continue</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Complete ─────────────────────────────────
+    const renderComplete = () => (
+        <div className="fade-in">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: colors.accent, marginBottom: '14px' }}><TrophyIcon /></div>
+                <h2 style={{ color: colors.primary, fontSize: '22px', fontWeight: 700 }}>Chapter Complete!</h2>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.success}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '12px' }}>What You Discovered</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        `Recognition is the process by which something enters the accounting records. Sofia\u2019s filter design hasn\u2019t been recognized.`,
+                        'Intangible assets — designs, expertise, relationships, reputation — are often never recorded.',
+                        `The exclusion isn\u2019t purely technical: it involves difficulty of quantification, the absence of anchoring transactions, managerial preferences, cost-benefit trade-offs, and political compromises.`,
+                        'The rules are human-designed and could have been different.',
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '14px', color: colors.earthDark }}>
+                            <span style={{ color: colors.success, flexShrink: 0, marginTop: '1px' }}>✓</span><span>{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div style={s.insightBox}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>The Deeper Point</p>
+                <p>The records <em>show</em> what has been recorded. The entity <em>has</em> a richer, more complex reality that extends far beyond the numbers. The most important thing Sofia has — the filter design — is invisible in the records. This isn't a bug; it's a feature of a system designed by people with interests.</p>
+            </div>
+
+            <div style={{ ...s.card, background: colors.clayLight }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>Coming Next</p>
+                <p style={{ fontSize: '14px', color: colors.earthDark, lineHeight: 1.5 }}>
+                    Sofia can now read her financial statements with clear eyes — seeing them as powerful, useful, and incomplete. Two entities, two stories, one reality.
+                </p>
+                <p style={{ fontWeight: 700, color: colors.primary, marginTop: '10px' }}>Next: Chapter 8 — The Payoff</p>
+            </div>
+
+            <button onClick={() => { playContinueClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '12px' }}>Next Chapter <ChevronRight /></button>
+            <button onClick={handleRestart} style={{ ...s.btn, ...s.outlineBtn, marginTop: '8px' }}><RestartIcon /> Restart Chapter</button>
+        </div>
+    );
+
+    // ─── Render ──────────────────────────────────────────
+    const renderPhase = () => {
+        switch (phase) {
+            case 'welcome': return renderWelcome();
+            case 'search': return renderSearch();
+            case 'naming': return renderNaming();
+            case 'why1': return renderWhy1();
+            case 'why2': return renderWhy2();
+            case 'synthesis': return renderSynthesis();
+            case 'complete': return renderComplete();
+            default: return null;
+        }
+    };
+
+    return (
+        <div style={s.container}>
+            <Header />
+            <main style={s.main}>{renderPhase()}</main>
+            {showGlossary && <GlossaryModal />}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Chapter7 />);
+    </script>
+</body>
+</html>

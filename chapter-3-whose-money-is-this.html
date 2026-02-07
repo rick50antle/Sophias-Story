@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 3: Whose Money Is This? | Sofia's Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Sans 3', sans-serif; background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%); min-height: 100vh; }
+        .narrative-font { font-family: 'Cormorant Garamond', serif; }
+        input:focus, textarea:focus, button:focus { outline: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+/**
+ * Chapter 3: Whose Money Is This?
+ * Sofia's Story — Accounting Chapter Series
+ *
+ * @version 1.0
+ * @date 2026-02-07
+ * @description Sofia creates two separate entities—ClearCurrent LLC and The PureAccess Project—
+ *   to keep mission funds separate from commercial funds. The learner sorts transactions and
+ *   discovers the accounting entity concept. Covers Arc Phase 4.
+ */
+
+const { useState } = React;
+
+// ─── Color Palette ───────────────────────────────────────────
+const colors = {
+    primary: '#00356b', primaryLight: '#1a4a7a',
+    sand: '#f5f1e8', sandLight: '#faf8f3',
+    earth: '#8b7355', earthLight: '#d4c4a8', earthDark: '#5c4d3d',
+    accent: '#c9a227', accentWarm: '#d4a84b',
+    textDark: '#2c2416', textMuted: '#6b5d4d',
+    clay: '#c4a574', clayLight: '#e8dcc8', clayDark: '#a08050',
+    success: '#22c55e', successBg: '#f0fdf4',
+    warning: '#f59e0b', warningBg: '#fffbeb',
+    error: '#dc2626', errorBg: '#fef2f2',
+    clearCurrent: '#0369a1', clearCurrentBg: '#e0f2fe',
+    pureAccess: '#15803d', pureAccessBg: '#dcfce7',
+    shared: '#b45309', sharedBg: '#fef3c7',
+};
+
+// ─── Sound Functions ─────────────────────────────────────────
+const createAudioContext = () => new (window.AudioContext || window.webkitAudioContext)();
+const playSuccessTone = () => { try { const ctx = createAudioContext(); [523.25,659.25,783.99].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.1; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.15); o.start(t);o.stop(t+0.25); }); setTimeout(()=>ctx.close(),600); } catch(e){} };
+const playSoftNope = () => { try { const ctx = createAudioContext(); [400,300].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.12; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.12); o.start(t);o.stop(t+0.17); }); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playBuzzer = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=150;o.type='sawtooth'; const t=ctx.currentTime; g.gain.setValueAtTime(0.25,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.3); o.start(t);o.stop(t+0.35); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playContinueClick = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=600;o.type='sine'; const t=ctx.currentTime; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.01,t+0.08); o.start(t);o.stop(t+0.1); setTimeout(()=>ctx.close(),150); } catch(e){} };
+
+// ─── SVG Icons ───────────────────────────────────────────────
+const ChevronRight = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>);
+const ChevronDown = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>);
+const ChevronUp = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>);
+const BookIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>);
+const RestartIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>);
+const InfoIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>);
+const TrophyIcon = () => (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>);
+const CheckCircleIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>);
+
+// ─── Transaction Data ────────────────────────────────────────
+const transactions = [
+    { id: 1,  date: 'Nov 1', desc: 'Attorney fee for entity formation',         amount: 500,  correct: 'shared' },
+    { id: 2,  date: 'Nov 1', desc: 'ClearCurrent bank deposit (personal funds)', amount: 2000, correct: 'clearCurrent' },
+    { id: 3,  date: 'Nov 1', desc: 'PureAccess bank deposit (personal funds)',  amount: 2000, correct: 'pureAccess' },
+    { id: 4,  date: 'Nov 3', desc: 'Materials for ClearCurrent filters',       amount: 200,  correct: 'clearCurrent' },
+    { id: 5,  date: 'Nov 3', desc: 'Materials for PureAccess filters',         amount: 200,  correct: 'pureAccess' },
+    { id: 6,  date: 'Nov 5', desc: 'Logo design for ClearCurrent (paid)',      amount: 75,   correct: 'clearCurrent' },
+    { id: 7,  date: 'Nov 5', desc: 'Logo design for PureAccess (volunteer)',   amount: 0,    correct: 'pureAccess' },
+    { id: 8,  date: 'Nov 8', desc: 'Supporter contribution to ClearCurrent',   amount: 500,  correct: 'clearCurrent' },
+    { id: 9,  date: 'Nov 10', desc: 'Foundation grant to PureAccess',          amount: 1000, correct: 'pureAccess' },
+    { id: 10, date: 'Nov 12', desc: 'Filter sales from ClearCurrent',          amount: 250,  correct: 'clearCurrent' },
+    { id: 11, date: 'Nov 15', desc: 'Filters distributed by PureAccess',       amount: 0,    correct: 'pureAccess' },
+    { id: 12, date: 'Nov 18', desc: 'Instruction leaflets for ClearCurrent',   amount: 50,   correct: 'clearCurrent' },
+    { id: 13, date: 'Nov 22', desc: 'Shipping filters overseas for PureAccess', amount: 100,  correct: 'pureAccess' },
+];
+
+// ─── Main Component ──────────────────────────────────────────
+function Chapter3() {
+    const phaseOrder = ['welcome', 'problem', 'decision', 'sorting', 'boundary', 'naming', 'complete'];
+    const [phase, setPhase] = useState('welcome');
+
+    // UI state
+    const [showGlossary, setShowGlossary] = useState(false);
+    const [showCreativeNote, setShowCreativeNote] = useState(false);
+    const [showPreamble, setShowPreamble] = useState(false);
+    const [devMode, setDevMode] = useState(false);
+    const [headerClickCount, setHeaderClickCount] = useState(0);
+
+    // Q1: Two-choice (donor intent)
+    const [q1Choice, setQ1Choice] = useState(null);
+    const [q1Submitted, setQ1Submitted] = useState(false);
+    const [q1Attempts, setQ1Attempts] = useState(0);
+
+    // Q2: Two-choice (physical vs. accounting change)
+    const [q2Choice, setQ2Choice] = useState(null);
+    const [q2Submitted, setQ2Submitted] = useState(false);
+    const [q2Attempts, setQ2Attempts] = useState(0);
+
+    // Q3: Sorting transactions
+    const [assignments, setAssignments] = useState({});
+    const [q3Submitted, setQ3Submitted] = useState(false);
+    const [q3Attempts, setQ3Attempts] = useState(0);
+
+    // Q4: Cash balance calculation
+    const [cashAnswer, setCashAnswer] = useState('');
+    const [q4Submitted, setQ4Submitted] = useState(false);
+    const [q4Attempts, setQ4Attempts] = useState(0);
+
+    // Q5: Open reflection
+    const [reflectionAnswer, setReflectionAnswer] = useState('');
+    const [q5Submitted, setQ5Submitted] = useState(false);
+
+    // Progress
+    const currentPhaseIndex = phaseOrder.indexOf(phase);
+    const progress = Math.round((currentPhaseIndex / (phaseOrder.length - 1)) * 100);
+
+    const handleHeaderClick = () => {
+        const n = headerClickCount + 1;
+        setHeaderClickCount(n);
+        if (n >= 3) { setDevMode(!devMode); setHeaderClickCount(0); }
+    };
+
+    const handleRestart = () => {
+        playContinueClick();
+        setPhase('welcome');
+        setShowCreativeNote(false);
+        setQ1Choice(null); setQ1Submitted(false); setQ1Attempts(0);
+        setQ2Choice(null); setQ2Submitted(false); setQ2Attempts(0);
+        setAssignments({}); setQ3Submitted(false); setQ3Attempts(0);
+        setCashAnswer(''); setQ4Submitted(false); setQ4Attempts(0);
+        setReflectionAnswer(''); setQ5Submitted(false);
+    };
+
+    // Q1 handler
+    const handleQ1 = (choice) => {
+        if (q1Submitted) return;
+        setQ1Choice(choice);
+        if (choice === 'no') {
+            playSuccessTone(); setQ1Submitted(true);
+        } else {
+            const n = q1Attempts + 1; setQ1Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ1Submitted(true); setQ1Choice('no'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q2 handler
+    const handleQ2 = (choice) => {
+        if (q2Submitted) return;
+        setQ2Choice(choice);
+        if (choice === 'no') {
+            playSuccessTone(); setQ2Submitted(true);
+        } else {
+            const n = q2Attempts + 1; setQ2Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ2Submitted(true); setQ2Choice('no'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q3 handlers
+    const assignTransaction = (id, entity) => {
+        if (q3Submitted) return;
+        setAssignments(prev => ({ ...prev, [id]: prev[id] === entity ? null : entity }));
+    };
+
+    const handleQ3Submit = () => {
+        const allAssigned = transactions.every(t => assignments[t.id]);
+        if (!allAssigned) return;
+        const allCorrect = transactions.every(t => assignments[t.id] === t.correct);
+        if (allCorrect) {
+            playSuccessTone(); setQ3Submitted(true);
+        } else {
+            const n = q3Attempts + 1; setQ3Attempts(n);
+            if (n >= 3) {
+                playBuzzer(); setQ3Submitted(true);
+                const correct = {};
+                transactions.forEach(t => { correct[t.id] = t.correct; });
+                setAssignments(correct);
+            } else { playSoftNope(); }
+        }
+    };
+
+    // Q4 handler
+    const handleQ4Submit = () => {
+        const val = parseInt(cashAnswer.replace(/[$,]/g, ''), 10);
+        const correct = 2625;
+        if (Math.abs(val - correct) <= 5) {
+            playSuccessTone(); setQ4Submitted(true);
+        } else {
+            const n = q4Attempts + 1; setQ4Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ4Submitted(true); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q5 handler
+    const handleQ5Submit = () => {
+        if (reflectionAnswer.trim().length >= 20) {
+            playSuccessTone(); setQ5Submitted(true);
+        }
+    };
+
+    // ─── Styles ─────────────────────────────────────────
+    const s = {
+        container: { minHeight: '100vh', background: `linear-gradient(135deg, ${colors.sandLight} 0%, ${colors.sand} 100%)` },
+        main: { padding: '16px', maxWidth: '720px', margin: '0 auto' },
+        card: { background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+        narrativeBlock: { padding: '20px', borderRadius: '12px', borderLeft: `4px solid ${colors.accent}`, background: colors.sand, marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.7, color: colors.textDark, fontStyle: 'italic' },
+        btn: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' },
+        primaryBtn: { background: colors.primary, color: 'white' },
+        outlineBtn: { background: 'transparent', border: `2px solid ${colors.primary}`, color: colors.primary },
+        hintBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        successBox: { padding: '14px', borderRadius: '10px', background: colors.successBg, border: `1px solid ${colors.success}`, marginTop: '10px', fontSize: '14px', color: '#166534' },
+        revealBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, border: `1px solid ${colors.warning}`, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        insightBox: { padding: '20px', borderRadius: '12px', border: `2px solid ${colors.accent}`, background: '#fef9e7', marginBottom: '16px', fontSize: '15px', color: colors.earthDark, lineHeight: 1.6 },
+    };
+
+    // ─── Header ─────────────────────────────────────────
+    const Header = () => (
+        <div style={{ background: colors.primary, borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: '17px' }}>Chapter 3: Whose Money Is This?</span>
+                    <p style={{ color: colors.earthLight, fontSize: '13px', marginTop: '4px' }}>Sofia's Story &bullet; ~20 min</p>
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    <button onClick={() => setShowGlossary(true)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Glossary"><BookIcon /></button>
+                    <button onClick={handleRestart} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Restart"><RestartIcon /></button>
+                </div>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}><span>Progress</span><span>{progress}%</span></div>
+                <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.2)' }}>
+                    <div style={{ height: '100%', borderRadius: '4px', background: colors.accent, width: `${progress}%`, transition: 'width 0.5s ease' }} />
+                </div>
+            </div>
+            {devMode && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>Dev Mode: Skip to phase</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {phaseOrder.map(p => (<button key={p} onClick={() => setPhase(p)} style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', fontSize: '12px', cursor: 'pointer', background: phase === p ? 'white' : 'rgba(255,255,255,0.2)', color: phase === p ? colors.primary : 'white' }}>{p}</button>))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // ─── Glossary ────────────────────────────────────────
+    const GlossaryModal = () => (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ background: 'white', borderRadius: '16px', maxWidth: '420px', width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+                <div style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', borderRadius: '16px 16px 0 0' }}>
+                    <strong style={{ color: colors.primary }}>Glossary</strong>
+                    <button onClick={() => setShowGlossary(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>&times;</button>
+                </div>
+                <div style={{ padding: '16px' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                        <p style={{ fontWeight: 700, color: colors.primary, fontSize: '14px', marginBottom: '4px' }}>Cash Receipts and Disbursements Journal</p>
+                        <p style={{ fontSize: '13px', color: colors.textMuted }}>A record that separates cash coming in (receipts) from cash going out (disbursements).</p>
+                    </div>
+                    <div style={{ marginBottom: '12px' }}>
+                        <p style={{ fontWeight: 700, color: colors.primary, fontSize: '14px', marginBottom: '4px' }}>Accounting Entity</p>
+                        <p style={{ fontSize: '13px', color: colors.textMuted }}>The idea that records belong to a defined entity, separate from the person who owns or operates it. The boundary is a convention, chosen for purposes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+
+    const ContinueButton = ({ onClick, children = "Continue" }) => (
+        <button onClick={() => { playContinueClick(); onClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '16px' }}>{children} <ChevronRight /></button>
+    );
+
+    // ─── PHASE: Welcome ──────────────────────────────────
+    const renderWelcome = () => (
+        <div className="fade-in">
+            {/* Story So Far — optional preamble */}
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowPreamble(!showPreamble)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '12px', border: 'none', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, color: colors.earthDark, cursor: 'pointer', fontSize: '15px', textAlign: 'left' }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontStyle: 'italic' }}>The story so far&hellip;</span>
+                    {showPreamble ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showPreamble && (
+                    <div style={{ marginTop: '8px', padding: '20px', borderRadius: '12px', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.8, color: colors.textDark }}>
+                        <p>As interest grew and activity increased, Sofia realized she needed to be more formal. She paid a local attorney five hundred dollars to form two separate legal entities. ClearCurrent, LLC was incorporated as a limited liability company&thinsp;&mdash;&thinsp;flexible enough to sell products, pay collaborators, and scale up if demand grew. The PureAccess Project was formed as a nonprofit corporation, with the goal of qualifying for 501(c)(3) status so she could apply for grants and accept tax-deductible donations.</p>
+                        <p style={{ marginTop: '14px' }}>She set up a separate bank account for each entity, deposited two thousand dollars of her own money into each one, and devoted twenty of her prototype filters to each effort. She applied for a small business credit card for each entity and got approved. Now each organization had its own name, its own bank account, its own initial inventory, its own credit card, and its own email address. It was still just Sofia doing the work, but at least things were beginning to take shape.</p>
+                    </div>
+                )}
+            </div>
+
+            <div style={s.narrativeBlock}>
+                <p>The $615 donation came from friends and family who wanted to help get clean water to communities in need. But Sofia also wants to sell filters commercially. The donation can't serve both purposes. Something has to be separated.</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.primary}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>In This Chapter</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>You'll help Sofia decide how to split her project into two entities—and then sort her transactions between them.</p>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowCreativeNote(!showCreativeNote)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', border: 'none', background: colors.clayLight, color: colors.earthDark, cursor: 'pointer', fontSize: '14px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><InfoIcon /><span style={{ fontWeight: 500 }}>A Note on Creative Liberties</span></span>
+                    {showCreativeNote ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showCreativeNote && (
+                    <div style={{ marginTop: '8px', padding: '16px', borderRadius: '10px', background: 'white', border: `1px solid ${colors.earthLight}`, fontSize: '14px', color: colors.earthDark, lineHeight: 1.6 }}>
+                        <p style={{ marginBottom: '10px' }}>Entity formation is presented as a single decision point. In practice, creating an LLC and a nonprofit corporation involves weeks of legal paperwork, tax elections, registered agent designations, and state filings. Sofia's $500 attorney fee and instant setup compress a complex process into a clean narrative beat. This is fiction in service of teaching accounting concepts.</p>
+                        <p style={{ fontStyle: 'italic' }}>This is fiction in service of teaching accounting concepts.</p>
+                    </div>
+                )}
+            </div>
+
+            <ContinueButton onClick={() => setPhase('problem')}>Begin Chapter</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Problem ──────────────────────────────────
+    const renderProblem = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '10px' }}>The Problem</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6, marginBottom: '14px' }}>
+                    The $615 donation is recorded in Sofia's cash journal. But the donors didn't give money for a commercial business—they gave it to support getting filters to underserved communities. Right now, that money sits in the same record as everything else.
+                </p>
+            </div>
+
+            {/* Q1 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question:</span> Maya's friends donated $615 to get filters to underserved communities. Should Sofia use that money to buy logo stickers for her commercial brand?
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {['yes', 'no'].map(choice => {
+                        const isThis = q1Choice === choice;
+                        const isCorrect = choice === 'no';
+                        let borderColor = isThis ? colors.primary : colors.earthLight;
+                        let bg = isThis ? '#eef3fa' : 'white';
+                        if (q1Submitted) {
+                            if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                            else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                        }
+                        return (
+                            <button key={choice} onClick={() => handleQ1(choice)} disabled={q1Submitted}
+                                style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q1Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '16px', color: colors.textDark, textTransform: 'capitalize' }}>
+                                {choice === 'yes' ? 'Yes' : 'No'}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {q1Attempts > 0 && q1Attempts < 3 && !q1Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q1Attempts}/2: </strong>
+                        {q1Attempts === 1 && "Think about why the donors gave the money. What did they think it would be used for?"}
+                        {q1Attempts === 2 && "If donors learn their money funded commercial branding instead of filter distribution, would they donate again?"}
+                    </div>
+                )}
+
+                {q1Submitted && q1Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. The donors gave money for the mission, not the business. Using it for commercial purposes would betray their intent. The money needs to be kept separate.</div>
+                )}
+
+                {q1Submitted && q1Attempts >= 3 && (
+                    <div style={s.revealBox}><strong>No</strong> — the donors gave money for the mission, not the business. Using it for commercial purposes would betray their intent. The money needs to be kept separate.</div>
+                )}
+            </div>
+
+            {q1Submitted && <ContinueButton onClick={() => setPhase('decision')}>Next: Make a Decision</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Decision ─────────────────────────────────
+    const renderDecision = () => (
+        <div className="fade-in">
+            <div style={s.narrativeBlock}>
+                <p>Sofia makes a decision: she'll create two separate business entities. <strong>ClearCurrent, LLC</strong> will sell filters for profit. <strong>The PureAccess Project</strong> will distribute filters to underserved communities (nonprofit). She hires a local attorney ($500), opens separate bank accounts ($2,000 deposited into each), allocates 20 of her 40 filters to each entity, and gets separate credit cards and emails.</p>
+                <p style={{ marginTop: '12px' }}>The date is <strong>November 1, 2025</strong>.</p>
+            </div>
+
+            {/* Q2 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question:</span> When Sofia creates these two entities, does anything physical change? Do the filters move? Does the garage split in two?
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {['yes', 'no'].map(choice => {
+                        const isThis = q2Choice === choice;
+                        const isCorrect = choice === 'no';
+                        let borderColor = isThis ? colors.primary : colors.earthLight;
+                        let bg = isThis ? '#eef3fa' : 'white';
+                        if (q2Submitted) {
+                            if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                            else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                        }
+                        return (
+                            <button key={choice} onClick={() => handleQ2(choice)} disabled={q2Submitted}
+                                style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q2Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '16px', color: colors.textDark, textTransform: 'capitalize' }}>
+                                {choice === 'yes' ? 'Yes' : 'No'}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {q2Attempts > 0 && q2Attempts < 3 && !q2Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q2Attempts}/2: </strong>
+                        {q2Attempts === 1 && "Think about what actually happened in the garage on November 1."}
+                        {q2Attempts === 2 && "Sofia signed papers and opened bank accounts. The filters are still on the same shelf."}
+                    </div>
+                )}
+
+                {q2Submitted && q2Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Correct. Nothing physical changed. The filters are in the same garage, on the same shelf. What changed is how Sofia organized her records. She created a boundary—but it's a boundary in the records, not in the physical world.</div>
+                )}
+
+                {q2Submitted && q2Attempts >= 3 && (
+                    <div style={s.revealBox}><strong>No</strong> — nothing physical changed. The filters are in the same garage, on the same shelf. What changed is how Sofia organized her records. She created a boundary in the records, not in the physical world.</div>
+                )}
+            </div>
+
+            {q2Submitted && <ContinueButton onClick={() => setPhase('sorting')}>Sort the Transactions</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Sorting ──────────────────────────────────
+    const renderSorting = () => {
+        const assignedCount = Object.values(assignments).filter(v => v).length;
+        const allAssigned = assignedCount === transactions.length;
+
+        return (
+            <div className="fade-in">
+                <div style={s.card}>
+                    <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '4px' }}>Sort the Transactions</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '14px' }}>
+                        For each November transaction, tap the entity it belongs to: <strong style={{ color: colors.clearCurrent }}>ClearCurrent</strong>, <strong style={{ color: colors.pureAccess }}>PureAccess</strong>, or <strong style={{ color: colors.shared }}>Shared/Ambiguous</strong>.
+                    </p>
+
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', fontSize: '13px', fontWeight: 600 }}>
+                        <div style={{ flex: 1, textAlign: 'center', padding: '8px', borderRadius: '8px', background: colors.clearCurrentBg, color: colors.clearCurrent }}>ClearCurrent</div>
+                        <div style={{ flex: 1, textAlign: 'center', padding: '8px', borderRadius: '8px', background: colors.pureAccessBg, color: colors.pureAccess }}>PureAccess</div>
+                        <div style={{ flex: 1, textAlign: 'center', padding: '8px', borderRadius: '8px', background: colors.sharedBg, color: colors.shared }}>Shared</div>
+                    </div>
+
+                    {transactions.map(t => {
+                        const a = assignments[t.id];
+                        let cardBorder = colors.earthLight;
+                        let cardBg = 'white';
+                        if (q3Submitted) {
+                            cardBorder = a === t.correct ? colors.success : colors.error;
+                            cardBg = a === t.correct ? colors.successBg : colors.errorBg;
+                        } else if (a === 'clearCurrent') {
+                            cardBorder = colors.clearCurrent; cardBg = colors.clearCurrentBg;
+                        } else if (a === 'pureAccess') {
+                            cardBorder = colors.pureAccess; cardBg = colors.pureAccessBg;
+                        } else if (a === 'shared') {
+                            cardBorder = colors.shared; cardBg = colors.sharedBg;
+                        }
+
+                        return (
+                            <div key={t.id} style={{ border: `2px solid ${cardBorder}`, borderRadius: '10px', padding: '10px 12px', marginBottom: '8px', background: cardBg, transition: 'all 0.15s' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <span style={{ fontWeight: 600, color: colors.primary, fontSize: '13px', marginRight: '6px' }}>{t.date}</span>
+                                        <span style={{ fontSize: '14px', color: colors.textDark }}>{t.desc}</span>
+                                    </div>
+                                    {t.amount > 0 && <span style={{ fontWeight: 700, color: colors.earthDark, fontSize: '15px', marginLeft: '8px', whiteSpace: 'nowrap' }}>${t.amount}</span>}
+                                </div>
+                                {!q3Submitted && (
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button onClick={() => assignTransaction(t.id, 'clearCurrent')}
+                                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `2px solid ${a === 'clearCurrent' ? colors.clearCurrent : colors.earthLight}`, background: a === 'clearCurrent' ? colors.clearCurrentBg : 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: a === 'clearCurrent' ? colors.clearCurrent : colors.textMuted }}>
+                                            CC
+                                        </button>
+                                        <button onClick={() => assignTransaction(t.id, 'pureAccess')}
+                                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `2px solid ${a === 'pureAccess' ? colors.pureAccess : colors.earthLight}`, background: a === 'pureAccess' ? colors.pureAccessBg : 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: a === 'pureAccess' ? colors.pureAccess : colors.textMuted }}>
+                                            PA
+                                        </button>
+                                        <button onClick={() => assignTransaction(t.id, 'shared')}
+                                            style={{ flex: 1, padding: '8px', borderRadius: '8px', border: `2px solid ${a === 'shared' ? colors.shared : colors.earthLight}`, background: a === 'shared' ? colors.sharedBg : 'white', cursor: 'pointer', fontWeight: 600, fontSize: '13px', color: a === 'shared' ? colors.shared : colors.textMuted }}>
+                                            SH
+                                        </button>
+                                    </div>
+                                )}
+                                {q3Submitted && (
+                                    <div style={{ fontSize: '13px', fontWeight: 600, color: a === t.correct ? colors.success : colors.error }}>
+                                        {a === t.correct ? '✓' : '✗'} {a === 'clearCurrent' ? 'ClearCurrent' : a === 'pureAccess' ? 'PureAccess' : 'Shared'}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {!q3Submitted && (
+                        <button onClick={handleQ3Submit} disabled={!allAssigned}
+                            style={{ ...s.btn, ...s.primaryBtn, marginTop: '14px', opacity: allAssigned ? 1 : 0.5 }}>
+                            Check ({assignedCount}/{transactions.length} assigned)
+                        </button>
+                    )}
+
+                    {q3Attempts > 0 && q3Attempts < 3 && !q3Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q3Attempts}/2: </strong>
+                            {q3Attempts === 1 && "Ask: who benefits from this transaction? If it's about selling filters, it's ClearCurrent. If it's about distributing filters to communities, it's PureAccess."}
+                            {q3Attempts === 2 && "The attorney fee ($500) is tricky—it created both entities. Where does it go? That's why there's a 'Shared/Ambiguous' column."}
+                        </div>
+                    )}
+
+                    {q3Submitted && q3Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> All sorted correctly. Notice the attorney fee goes to Shared—it benefited both entities equally.</div>
+                    )}
+
+                    {q3Submitted && q3Attempts >= 3 && (
+                        <div style={s.revealBox}>The correct sorting is shown above. The attorney fee ($500) is shared because it created both entities.</div>
+                    )}
+                </div>
+
+                {q3Submitted && <ContinueButton onClick={() => setPhase('boundary')}>Continue</ContinueButton>}
+            </div>
+        );
+    };
+
+    // ─── PHASE: Calculate Cash Balance ─────────────────
+    const renderCashBalance = () => {
+        // ClearCurrent: $2,000 (deposit) + $500 (supporter) + $250 (sales) - $75 (logo) - $50 (leaflets) = $2,625
+        const clearCurrentCorrect = 2625;
+
+        return (
+            <div className="fade-in">
+                <div style={s.card}>
+                    <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '10px' }}>ClearCurrent's November Cash Balance</p>
+                    <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6, marginBottom: '14px' }}>
+                        Now that everything is sorted, let's calculate. The attorney fee ($500) was split evenly—$250 to each entity. After sorting all transactions and accounting for what was paid in cash versus charged to credit cards, what is ClearCurrent's cash balance as of November 30?
+                    </p>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px' }}>
+                        <span style={{ fontSize: '16px', fontWeight: 600 }}>$</span>
+                        <input type="text" inputMode="numeric" value={cashAnswer} onChange={e => setCashAnswer(e.target.value)} disabled={q4Submitted} placeholder="?" style={{ width: '120px', padding: '10px', border: `2px solid ${q4Submitted ? colors.success : colors.earthLight}`, borderRadius: '8px', textAlign: 'center', fontSize: '16px', fontFamily: 'monospace' }} />
+                    </div>
+
+                    {!q4Submitted && (
+                        <button onClick={handleQ4Submit} disabled={!cashAnswer}
+                            style={{ ...s.btn, ...s.primaryBtn, opacity: cashAnswer ? 1 : 0.5 }}>Check</button>
+                    )}
+
+                    {q4Attempts > 0 && q4Attempts < 3 && !q4Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q4Attempts}/2: </strong>
+                            {q4Attempts === 1 && "Start with the $2,000 deposit. Add the inflows (supporter contribution, filter sales). Subtract the outflows (logo, leaflets). Don't include credit card purchases—those haven't been paid in cash yet."}
+                            {q4Attempts === 2 && "ClearCurrent received $500 from a supporter and $250 from filter sales. That's $750 in. It paid $75 for logo design and $50 for printing. That's $125 out. So: $2,000 + $500 + $250 - $75 - $50 = $2,625."}
+                        </div>
+                    )}
+
+                    {q4Submitted && q4Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Correct. $2,000 + $500 + $250 - $75 - $50 = $2,625. This is ClearCurrent's November cash position.</div>
+                    )}
+
+                    {q4Submitted && q4Attempts >= 3 && (
+                        <div style={s.revealBox}><strong>$2,625.</strong> ClearCurrent started with $2,000. It received $500 from a supporter and $250 from sales, for inflows of $750. It paid $75 for logo design and $50 for printing, for outflows of $125. So: $2,000 + $750 - $125 = $2,625.</div>
+                    )}
+                </div>
+
+                {q4Submitted && <ContinueButton onClick={() => setPhase('boundary')}>Reflect on Boundaries</ContinueButton>}
+            </div>
+        );
+    };
+
+    // ─── PHASE: Boundary ─────────────────────────────────
+    const renderBoundary = () => (
+        <div className="fade-in">
+            <div style={s.card}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '10px' }}>The Boundary Is a Choice</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6, marginBottom: '14px' }}>
+                    <span style={{ color: colors.primary }}>Reflection question:</span> The attorney fee had to be split between the two entities. But could Sofia have drawn the boundary differently? For example, what if she'd decided that filters sold to local businesses belonged to PureAccess and filters shipped overseas belonged to ClearCurrent?
+                </p>
+
+                <textarea value={reflectionAnswer} onChange={e => setReflectionAnswer(e.target.value)} disabled={q5Submitted} placeholder="Your thinking..." rows={3} style={{ width: '100%', padding: '12px', border: `2px solid ${q5Submitted ? colors.success : colors.earthLight}`, borderRadius: '8px', fontSize: '15px', fontFamily: "'Source Sans 3', sans-serif", resize: 'none', marginBottom: '10px' }} />
+
+                {!q5Submitted && (
+                    <button onClick={handleQ5Submit} disabled={reflectionAnswer.trim().length < 20}
+                        style={{ ...s.btn, ...s.primaryBtn, opacity: reflectionAnswer.trim().length >= 20 ? 1 : 0.5 }}>Submit</button>
+                )}
+
+                {q5Submitted && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> She could have. The boundary between ClearCurrent and PureAccess is a choice Sofia made—it reflects her purposes, not a physical reality. A different person with different goals might have drawn the line differently. The records follow the boundary; the boundary doesn't follow the records.</div>
+                )}
+            </div>
+
+            {q5Submitted && <ContinueButton onClick={() => setPhase('naming')}>Continue</ContinueButton>}
+        </div>
+    );
+
+    // ─── PHASE: Naming ───────────────────────────────────
+    const renderNaming = () => (
+        <div className="fade-in">
+            <div style={s.narrativeBlock}>
+                <p>What you've just done—separating Sofia's records into two distinct entities—has a name.</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.accent}`, background: '#fef9e7' }}>
+                <p style={{ fontSize: '18px', color: colors.textDark, lineHeight: 1.7, textAlign: 'center' }}>
+                    The idea that records belong to a defined entity, separate from the person who owns or operates it, is called the
+                </p>
+                <p style={{ fontSize: '22px', fontWeight: 700, color: colors.primary, textAlign: 'center', marginTop: '10px', marginBottom: '10px' }}>
+                    accounting entity
+                </p>
+                <p style={{ fontSize: '16px', color: colors.textDark, lineHeight: 1.7, textAlign: 'center' }}>
+                    The boundary is a convention—useful, purposeful, and chosen.
+                </p>
+            </div>
+
+            <div style={s.card}>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>
+                    Sofia is one person. But her records describe two entities. The accounting entity—the structure of her financial records—depends entirely on which entity's perspective you take. When ClearCurrent and PureAccess look at a bucket in Sofia's garage, they see it differently because they are different entities.
+                </p>
+            </div>
+
+            <ContinueButton onClick={() => setPhase('complete')}>Continue</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: Complete ─────────────────────────────────
+    const renderComplete = () => (
+        <div className="fade-in">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: colors.accent, marginBottom: '14px' }}><TrophyIcon /></div>
+                <h2 style={{ color: colors.primary, fontSize: '22px', fontWeight: 700 }}>Chapter Complete!</h2>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.success}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '12px' }}>What You Discovered</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        `Donations given for a specific purpose can\u2019t be mixed with commercial funds`,
+                        'Creating separate entities is a choice about how to organize records, not a physical change',
+                        'The boundary between entities is drawn by people, for purposes—and could have been drawn differently',
+                        'This concept is called the accounting entity—the records belong to the entity, not the person',
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '14px', color: colors.earthDark }}>
+                            <span style={{ color: colors.success, flexShrink: 0, marginTop: '1px' }}>✓</span><span>{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div style={s.insightBox}>
+                <p style={{ fontWeight: 600, marginBottom: '6px' }}>The Deeper Point</p>
+                <p>When Sofia created two entities, nothing in her garage moved. The filters stayed on the same shelf. What changed was the accounting representation—how the records organize and describe her activities. This will keep happening throughout these chapters: the records show one thing; the reality underneath may be different.</p>
+            </div>
+
+            <div style={{ ...s.card, background: colors.clayLight }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>Coming Next</p>
+                <p style={{ fontSize: '14px', color: colors.earthDark, lineHeight: 1.5 }}>
+                    Now that two entities exist, the same physical transaction can look different depending on which entity's records it enters. What happens when ClearCurrent and PureAccess both record a bucket purchase?
+                </p>
+                <p style={{ fontWeight: 700, color: colors.primary, marginTop: '10px' }}>Next: Chapter 4 &mdash; Two Lenses</p>
+            </div>
+
+            <button onClick={() => { playContinueClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '12px' }}>Next Chapter <ChevronRight /></button>
+            <button onClick={handleRestart} style={{ ...s.btn, ...s.outlineBtn, marginTop: '8px' }}><RestartIcon /> Restart Chapter</button>
+        </div>
+    );
+
+    // ─── Render ──────────────────────────────────────────
+    const renderPhase = () => {
+        switch (phase) {
+            case 'welcome': return renderWelcome();
+            case 'problem': return renderProblem();
+            case 'decision': return renderDecision();
+            case 'sorting': return renderSorting();
+            case 'boundary': return renderBoundary();
+            case 'naming': return renderNaming();
+            case 'complete': return renderComplete();
+            default: return null;
+        }
+    };
+
+    return (
+        <div style={s.container}>
+            <Header />
+            <main style={s.main}>{renderPhase()}</main>
+            {showGlossary && <GlossaryModal />}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Chapter3 />);
+    </script>
+</body>
+</html>

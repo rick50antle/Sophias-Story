@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 5: You're Reinventing the Wheel | Sofia's Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Source Sans 3', sans-serif; background: linear-gradient(135deg, #faf8f3 0%, #f5f1e8 100%); min-height: 100vh; }
+        .narrative-font { font-family: 'Cormorant Garamond', serif; }
+        input:focus, textarea:focus, button:focus { outline: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+/**
+ * Chapter 5: You're Reinventing the Wheel
+ * Sofia's Story — Accounting Chapter Series
+ *
+ * @version 1.0
+ * @date 2026-02-07
+ * @description The naming chapter. Maya looks at what Sofia has built
+ *   and shows her the formal accounting names for structures she's
+ *   already experienced: cash receipts and disbursements journal,
+ *   debits and credits, the accounting identity, double-entry bookkeeping.
+ *   Arc Phase 6. Duration: ~22 minutes.
+ */
+
+const { useState } = React;
+
+// ─── Color Palette ───────────────────────────────────────────
+const colors = {
+    primary: '#00356b', primaryLight: '#1a4a7a',
+    sand: '#f5f1e8', sandLight: '#faf8f3',
+    earth: '#8b7355', earthLight: '#d4c4a8', earthDark: '#5c4d3d',
+    accent: '#c9a227', accentWarm: '#d4a84b',
+    textDark: '#2c2416', textMuted: '#6b5d4d',
+    clay: '#c4a574', clayLight: '#e8dcc8', clayDark: '#a08050',
+    success: '#22c55e', successBg: '#f0fdf4',
+    warning: '#f59e0b', warningBg: '#fffbeb',
+    error: '#dc2626', errorBg: '#fef2f2',
+    inflow: '#0369a1', inflowBg: '#e0f2fe',
+    outflow: '#9a3412', outflowBg: '#fff7ed',
+};
+
+// ─── Sound Functions ─────────────────────────────────────────
+const createAudioContext = () => new (window.AudioContext || window.webkitAudioContext)();
+const playSuccessTone = () => { try { const ctx = createAudioContext(); [523.25,659.25,783.99].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.1; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.3,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.15); o.start(t);o.stop(t+0.25); }); setTimeout(()=>ctx.close(),600); } catch(e){} };
+const playSoftNope = () => { try { const ctx = createAudioContext(); [400,300].forEach((f,i) => { const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=f;o.type='sine'; const t=ctx.currentTime+i*0.12; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.2,t+0.02);g.gain.exponentialRampToValueAtTime(0.01,t+0.12); o.start(t);o.stop(t+0.17); }); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playBuzzer = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=150;o.type='sawtooth'; const t=ctx.currentTime; g.gain.setValueAtTime(0.25,t);g.gain.exponentialRampToValueAtTime(0.01,t+0.3); o.start(t);o.stop(t+0.35); setTimeout(()=>ctx.close(),400); } catch(e){} };
+const playContinueClick = () => { try { const ctx = createAudioContext(); const o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination); o.frequency.value=600;o.type='sine'; const t=ctx.currentTime; g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.01,t+0.08); o.start(t);o.stop(t+0.1); setTimeout(()=>ctx.close(),150); } catch(e){} };
+
+// ─── SVG Icons ───────────────────────────────────────────────
+const ChevronRight = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 5l7 7-7 7"/></svg>);
+const ChevronDown = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>);
+const ChevronUp = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>);
+const BookIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>);
+const RestartIcon = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>);
+const InfoIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>);
+const TrophyIcon = () => (<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>);
+const CheckCircleIcon = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>);
+
+// ─── Main Component ──────────────────────────────────────────
+function Chapter5() {
+    const phaseOrder = ['welcome', 'naming1', 'naming2', 'naming3', 'naming4', 'complete'];
+    const [phase, setPhase] = useState('welcome');
+
+    // UI state
+    const [showGlossary, setShowGlossary] = useState(false);
+    const [showCreativeNote, setShowCreativeNote] = useState(false);
+    const [showPreamble, setShowPreamble] = useState(false);
+    const [devMode, setDevMode] = useState(false);
+    const [headerClickCount, setHeaderClickCount] = useState(0);
+
+    // Question states
+    // naming2: Q1 and Q2
+    const [q1Choice, setQ1Choice] = useState(null);
+    const [q1Submitted, setQ1Submitted] = useState(false);
+    const [q1Attempts, setQ1Attempts] = useState(0);
+
+    const [q2Choice, setQ2Choice] = useState(null);
+    const [q2Submitted, setQ2Submitted] = useState(false);
+    const [q2Attempts, setQ2Attempts] = useState(0);
+
+    // naming3: Q3 and Q4
+    const [q3Answer, setQ3Answer] = useState('');
+    const [q3Submitted, setQ3Submitted] = useState(false);
+    const [q3Attempts, setQ3Attempts] = useState(0);
+
+    const [q4Choice, setQ4Choice] = useState(null);
+    const [q4Submitted, setQ4Submitted] = useState(false);
+    const [q4Attempts, setQ4Attempts] = useState(0);
+
+    // naming4: Q5 (open reflection)
+    const [q5Answer, setQ5Answer] = useState('');
+    const [q5Submitted, setQ5Submitted] = useState(false);
+
+    // Progress
+    const currentPhaseIndex = phaseOrder.indexOf(phase);
+    const progress = Math.round((currentPhaseIndex / (phaseOrder.length - 1)) * 100);
+
+    const handleHeaderClick = () => {
+        const n = headerClickCount + 1;
+        setHeaderClickCount(n);
+        if (n >= 3) { setDevMode(!devMode); setHeaderClickCount(0); }
+    };
+
+    const handleRestart = () => {
+        playContinueClick(); setPhase('welcome');
+        setShowCreativeNote(false);
+        setQ1Choice(null); setQ1Submitted(false); setQ1Attempts(0);
+        setQ2Choice(null); setQ2Submitted(false); setQ2Attempts(0);
+        setQ3Answer(''); setQ3Submitted(false); setQ3Attempts(0);
+        setQ4Choice(null); setQ4Submitted(false); setQ4Attempts(0);
+        setQ5Answer(''); setQ5Submitted(false);
+    };
+
+    // Q1 handler (naming2 — two sides)
+    const handleQ1 = (choice) => {
+        if (q1Submitted) return;
+        setQ1Choice(choice);
+        if (choice === 'Materials on hand') {
+            playSuccessTone(); setQ1Submitted(true);
+        } else {
+            const n = q1Attempts + 1; setQ1Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ1Submitted(true); setQ1Choice('Materials on hand'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q2 handler (naming2 — two sides cont.)
+    const handleQ2 = (choice) => {
+        if (q2Submitted) return;
+        setQ2Choice(choice);
+        if (choice === 'A grant obligation to use the funds for the mission') {
+            playSuccessTone(); setQ2Submitted(true);
+        } else {
+            const n = q2Attempts + 1; setQ2Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ2Submitted(true); setQ2Choice('A grant obligation to use the funds for the mission'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q3 handler (naming3 — equity calculation)
+    const handleQ3Submit = () => {
+        const val = parseInt(q3Answer.replace(/[$,]/g, ''), 10);
+        const correct = 2125;
+        if (Math.abs(val - correct) <= 2) {
+            playSuccessTone(); setQ3Submitted(true);
+        } else {
+            const n = q3Attempts + 1; setQ3Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ3Submitted(true); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q4 handler (naming3 — framework vs formula)
+    const handleQ4 = (choice) => {
+        if (q4Submitted) return;
+        setQ4Choice(choice);
+        if (choice === 'A framework') {
+            playSuccessTone(); setQ4Submitted(true);
+        } else {
+            const n = q4Attempts + 1; setQ4Attempts(n);
+            if (n >= 3) { playBuzzer(); setQ4Submitted(true); setQ4Choice('A framework'); }
+            else { playSoftNope(); }
+        }
+    };
+
+    // Q5 handler (naming4 — open reflection)
+    const handleQ5Submit = () => {
+        if (q5Answer.trim().length > 15) {
+            playSuccessTone(); setQ5Submitted(true);
+        } else {
+            playSoftNope();
+        }
+    };
+
+    // ─── Styles ─────────────────────────────────────────
+    const s = {
+        container: { minHeight: '100vh', background: `linear-gradient(135deg, ${colors.sandLight} 0%, ${colors.sand} 100%)` },
+        main: { padding: '16px', maxWidth: '720px', margin: '0 auto' },
+        card: { background: 'white', borderRadius: '12px', padding: '20px', marginBottom: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
+        narrativeBlock: { padding: '20px', borderRadius: '12px', borderLeft: `4px solid ${colors.accent}`, background: colors.sand, marginBottom: '16px', fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.7, color: colors.textDark, fontStyle: 'italic' },
+        dialogueBlock: { padding: '16px', borderRadius: '12px', background: colors.clayLight, marginBottom: '16px', color: colors.earthDark },
+        btn: { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: 600, fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' },
+        primaryBtn: { background: colors.primary, color: 'white' },
+        outlineBtn: { background: 'transparent', border: `2px solid ${colors.primary}`, color: colors.primary },
+        hintBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        successBox: { padding: '14px', borderRadius: '10px', background: colors.successBg, border: `1px solid ${colors.success}`, marginTop: '10px', fontSize: '14px', color: '#166534' },
+        revealBox: { padding: '14px', borderRadius: '10px', background: colors.warningBg, border: `1px solid ${colors.warning}`, marginTop: '10px', fontSize: '14px', color: '#92400e' },
+        insightBox: { padding: '20px', borderRadius: '12px', border: `2px solid ${colors.accent}`, background: '#fef9e7', marginBottom: '16px', fontSize: '15px', color: colors.earthDark, lineHeight: 1.6 },
+    };
+
+    // ─── Header ─────────────────────────────────────────
+    const Header = () => (
+        <div style={{ background: colors.primary, borderRadius: '12px', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div onClick={handleHeaderClick} style={{ cursor: 'pointer' }}>
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: '17px' }}>Chapter 5: You're Reinventing the Wheel</span>
+                    <p style={{ color: colors.earthLight, fontSize: '13px', marginTop: '4px' }}>Sofia's Story &bull; ~22 min</p>
+                </div>
+                <div style={{ display: 'flex', gap: '4px' }}>
+                    <button onClick={() => setShowGlossary(true)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Glossary"><BookIcon /></button>
+                    <button onClick={handleRestart} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', color: 'white' }} title="Restart"><RestartIcon /></button>
+                </div>
+            </div>
+            <div style={{ marginTop: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '4px' }}><span>Progress</span><span>{progress}%</span></div>
+                <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.2)' }}>
+                    <div style={{ height: '100%', borderRadius: '4px', background: colors.accent, width: `${progress}%`, transition: 'width 0.5s ease' }} />
+                </div>
+            </div>
+            {devMode && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.2)' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>Dev Mode: Skip to phase</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {phaseOrder.map(p => (<button key={p} onClick={() => setPhase(p)} style={{ padding: '4px 10px', borderRadius: '6px', border: 'none', fontSize: '12px', cursor: 'pointer', background: phase === p ? 'white' : 'rgba(255,255,255,0.2)', color: phase === p ? colors.primary : 'white' }}>{p}</button>))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    // ─── Glossary ────────────────────────────────────────
+    const GlossaryModal = () => (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', zIndex: 50 }}>
+            <div style={{ background: 'white', borderRadius: '16px', maxWidth: '420px', width: '100%', maxHeight: '80vh', overflow: 'auto' }}>
+                <div style={{ padding: '16px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'white', borderRadius: '16px 16px 0 0' }}>
+                    <strong style={{ color: colors.primary }}>Glossary</strong>
+                    <button onClick={() => setShowGlossary(false)} style={{ background: 'none', border: 'none', fontSize: '22px', cursor: 'pointer', color: '#999' }}>&times;</button>
+                </div>
+                <div style={{ padding: '16px' }}>
+                    {[
+                        { term: 'Cash receipts and disbursements journal', def: 'A record that separates cash inflows (receipts) from cash outflows (disbursements). The structure you built in Chapter 2.' },
+                        { term: 'Accounting entity', def: 'A distinct economic unit — person, organization, or project — whose records are kept separate from all other entities.' },
+                        { term: 'Debits and credits', def: 'The two sides of every accounting entry. Debits record one type of change; credits record the other.' },
+                        { term: 'Accounting identity', def: 'Assets − Liabilities = Equity (for-profit) or Net Assets (nonprofit). A framework for organizing financial information, not a formula.' },
+                        { term: 'Equity', def: 'The residual in a for-profit entity — mathematically determined by recorded assets and liabilities.' },
+                        { term: 'Net Assets', def: 'The residual in a nonprofit entity — the recorded net resources available to pursue the mission.' },
+                        { term: 'Double-entry', def: 'A recording system where every entry touches two things, conveying information about what changed and why.' },
+                    ].map((item, i) => (
+                        <div key={i} style={{ marginBottom: '12px', paddingBottom: '12px', borderBottom: i < 6 ? `1px solid ${colors.earthLight}` : 'none' }}>
+                            <p style={{ fontWeight: 600, color: colors.primary, fontSize: '14px', marginBottom: '4px' }}>{item.term}</p>
+                            <p style={{ fontSize: '13px', color: colors.textMuted, lineHeight: 1.5 }}>{item.def}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
+    const ContinueButton = ({ onClick, children = "Continue" }) => (
+        <button onClick={() => { playContinueClick(); onClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '16px' }}>{children} <ChevronRight /></button>
+    );
+
+    // ─── PHASE: Welcome ──────────────────────────────────
+    const renderWelcome = () => (
+        <div className="fade-in">
+            {/* Story So Far — optional preamble */}
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowPreamble(!showPreamble)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: '12px', border: 'none', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, color: colors.earthDark, cursor: 'pointer', fontSize: '15px', textAlign: 'left' }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontStyle: 'italic' }}>The story so far&hellip;</span>
+                    {showPreamble ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showPreamble && (
+                    <div style={{ marginTop: '8px', padding: '20px', borderRadius: '12px', background: '#fef9e7', borderLeft: `4px solid ${colors.accent}`, fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', lineHeight: 1.8, color: colors.textDark }}>
+                        <p>Then things got complicated.</p>
+                        <p style={{ marginTop: '14px' }}>After a few weeks, Sofia started to feel overwhelmed. She was answering emails for two organizations, coordinating with clinics overseas for PureAccess and customers locally for ClearCurrent, keeping receipts in a shoebox, and getting confused about who paid for what and under which name. She had been writing everything down in her journal&thinsp;&mdash;&thinsp;every important event, every transaction, every expense&thinsp;&mdash;&thinsp;but the journal mixed diary entries with dollar amounts, prototype notes with purchase records, reflections about the future with facts about the past.</p>
+                        <p style={{ marginTop: '14px', fontStyle: 'italic', borderLeft: `3px solid ${colors.accent}`, paddingLeft: '16px', color: colors.earth }}>"I know there must be proper accounting methods out there," she told a friend, "but I'm an engineer, not an accountant. I'm just trying to stay organized and make sure I don't lose track of anything important. Sometimes I feel like I'm reinventing the wheel."</p>
+                        <p style={{ marginTop: '14px' }}>She was right about that.</p>
+                    </div>
+                )}
+            </div>
+
+            <div style={s.narrativeBlock}>
+                <p>Sofia's organized her cash journal into receipts and disbursements. She's split her spending into two tiers—personal and organizational. She's tracked what she has and what she owes. She's balanced cash coming in with what went out.</p>
+                <p style={{ marginTop: '12px' }}>Maya looks at the records and smiles. "Sofia, you realize what you've been doing, right? You're not inventing anything new. You've been reinventing the wheel."</p>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.primary}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>In This Chapter</p>
+                <p style={{ fontSize: '15px', color: colors.textDark, lineHeight: 1.6 }}>You'll connect everything you've experienced in Chapters 1–4 to the formal accounting vocabulary. Nothing new here — just names for what you already know.</p>
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setShowCreativeNote(!showCreativeNote)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', borderRadius: '10px', border: 'none', background: colors.clayLight, color: colors.earthDark, cursor: 'pointer', fontSize: '14px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><InfoIcon /><span style={{ fontWeight: 500 }}>A Note on Creative Liberties</span></span>
+                    {showCreativeNote ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {showCreativeNote && (
+                    <div style={{ marginTop: '8px', padding: '16px', borderRadius: '10px', background: 'white', border: `1px solid ${colors.earthLight}`, fontSize: '14px', color: colors.earthDark, lineHeight: 1.6 }}>
+                        <p style={{ marginBottom: '10px' }}>Maya's role as informal accounting translator compresses what would normally be a semester of coursework into a single conversation. The naming moments are presented sequentially for clarity; in practice, these concepts are deeply interlocking and would be encountered over months.</p>
+                        <p style={{ fontStyle: 'italic' }}>This is fiction in service of teaching accounting concepts.</p>
+                    </div>
+                )}
+            </div>
+
+            <ContinueButton onClick={() => setPhase('naming1')}>Begin Chapter</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: naming1 — The Cash Journal ────────────────
+    const renderNaming1 = () => (
+        <div className="fade-in">
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Sofia:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark }}>
+                    "I split everything into what came in and what went out. It's a cash receipts and disbursements journal—you told me that's what it's called."
+                </p>
+            </div>
+
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Maya:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark }}>
+                    "Right. That's exactly what accountants call it. You built it before you knew the name. Let's see what else you've been reinventing."
+                </p>
+            </div>
+
+            <div style={s.insightBox}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>Cash receipts and disbursements journal</p>
+                <p>A record separating cash inflows (receipts) from cash outflows (disbursements). What you created in Chapter 2 when the $615 donation arrived.</p>
+            </div>
+
+            <ContinueButton onClick={() => setPhase('naming2')}>Continue</ContinueButton>
+        </div>
+    );
+
+    // ─── PHASE: naming2 — Two Sides ──────────────────────
+    const renderNaming2 = () => (
+        <div className="fade-in">
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Maya:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark }}>
+                    "When you record a transaction, you put it on one side or the other—inflow or outflow. But actually, every time something changes in the records, <strong>two</strong> things change. When cash went down, something else explains where it went. When cash came up, something else explains where it came from."
+                </p>
+            </div>
+
+            {/* Q1 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question 1:</span> When Sofia bought $480 in bulk materials, cash went down by $480. What went up?
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {['Materials on hand', 'Nothing — cash just decreased'].map(choice => {
+                        const isThis = q1Choice === choice;
+                        const isCorrect = choice === 'Materials on hand';
+                        let borderColor = isThis ? colors.primary : colors.earthLight;
+                        let bg = isThis ? '#eef3fa' : 'white';
+                        if (q1Submitted) {
+                            if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                            else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                        }
+                        return (
+                            <button key={choice} onClick={() => handleQ1(choice)} disabled={q1Submitted}
+                                style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q1Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '14px', color: colors.textDark }}>
+                                {choice}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {q1Attempts > 0 && q1Attempts < 3 && !q1Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q1Attempts}/2: </strong>
+                        {q1Attempts === 1 && "The cash left Sofia's bank account. But she got something in return."}
+                        {q1Attempts === 2 && "After the purchase, Sofia has less cash but more physical materials. Both sides of the picture changed."}
+                    </div>
+                )}
+
+                {q1Submitted && q1Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. Materials on hand went up. Cash went down by $480, and materials on hand went up by $480. Two things changed—not one.</div>
+                )}
+
+                {q1Submitted && q1Attempts >= 3 && (
+                    <div style={s.revealBox}><strong>Materials on hand.</strong> Cash went down by $480, and materials on hand went up by $480. Two things changed—not one.</div>
+                )}
+            </div>
+
+            {q1Submitted && (
+                <div style={{ ...s.card, background: '#fef9e7', border: `2px solid ${colors.accent}` }}>
+                    <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '8px' }}>The Two Sides Have Names</p>
+                    <p style={{ fontSize: '15px', color: colors.earthDark, lineHeight: 1.6, marginBottom: '10px' }}>
+                        Accountants call the two sides of each entry <strong>debits</strong> and <strong>credits</strong>. You've been recording debits and credits since Chapter 2—you just didn't call them that.
+                    </p>
+                </div>
+            )}
+
+            {/* Q2 */}
+            {q1Submitted && (
+                <div style={s.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question 2:</span> When the $1,000 foundation grant arrived at PureAccess, cash went up. What's the other side—what explains where the cash came from?
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        {['A grant obligation to use the funds for the mission', 'Nothing — it was free money'].map(choice => {
+                            const isThis = q2Choice === choice;
+                            const isCorrect = choice === 'A grant obligation to use the funds for the mission';
+                            let borderColor = isThis ? colors.primary : colors.earthLight;
+                            let bg = isThis ? '#eef3fa' : 'white';
+                            if (q2Submitted) {
+                                if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                                else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                            }
+                            return (
+                                <button key={choice} onClick={() => handleQ2(choice)} disabled={q2Submitted}
+                                    style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q2Submitted ? 'default' : 'pointer', fontWeight: '600', fontSize: '13px', color: colors.textDark, lineHeight: 1.4 }}>
+                                    {choice}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {q2Attempts > 0 && q2Attempts < 3 && !q2Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q2Attempts}/2: </strong>
+                            {q2Attempts === 1 && "Think about why the foundation gave the money. Did they expect something?"}
+                            {q2Attempts === 2 && "Foundation grants typically come with conditions—the money must be used for the stated mission. That's an obligation PureAccess took on."}
+                        </div>
+                    )}
+
+                    {q2Submitted && q2Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. The other side is a contribution with a purpose. PureAccess received cash, but it also took on an obligation to use that cash for its mission.</div>
+                    )}
+
+                    {q2Submitted && q2Attempts >= 3 && (
+                        <div style={s.revealBox}><strong>A grant obligation to use the funds for the mission.</strong> PureAccess received cash, but it also took on an obligation to use that cash for its mission. Both sides of the picture changed.</div>
+                    )}
+                </div>
+            )}
+
+            {q2Submitted && (
+                <ContinueButton onClick={() => setPhase('naming3')}>Continue</ContinueButton>
+            )}
+        </div>
+    );
+
+    // ─── PHASE: naming3 — The Identity ───────────────────
+    const renderNaming3 = () => (
+        <div className="fade-in">
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Maya:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark, marginBottom: '10px' }}>
+                    "Tell me what you have for ClearCurrent."
+                </p>
+            </div>
+
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Sofia:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark, marginBottom: '10px' }}>
+                    "Cash in the bank, inventory, some supplies. On the other side, credit card debt, money owed for the website, money owed for filter parts."
+                </p>
+            </div>
+
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Maya:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark, marginBottom: '10px' }}>
+                    "So you've got things the entity has—call those <strong>assets</strong>. Things it owes—call those <strong>liabilities</strong>. And what's left over?"
+                </p>
+            </div>
+
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Sofia:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark, marginBottom: '10px' }}>
+                    "Whatever's left after you subtract what's owed from what's there."
+                </p>
+            </div>
+
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Maya:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark }}>
+                    "That leftover has a name. For ClearCurrent, it's called <strong>Equity</strong>. For PureAccess, it's called <strong>Net Assets</strong>. And the whole structure—Assets minus Liabilities equals the residual—is called the <strong>accounting identity</strong>."
+                </p>
+            </div>
+
+            {/* Q3 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question 3:</span> ClearCurrent has recorded assets totaling $3,035 and recorded liabilities totaling $910. What is the equity?
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '16px', fontWeight: 600 }}>$</span>
+                    <input type="text" inputMode="numeric" value={q3Answer} onChange={e => setQ3Answer(e.target.value)} disabled={q3Submitted} placeholder="?" style={{ width: '100px', padding: '10px', border: `2px solid ${q3Submitted ? colors.success : colors.earthLight}`, borderRadius: '8px', textAlign: 'center', fontSize: '16px', fontFamily: 'monospace' }} />
+                </div>
+
+                {!q3Submitted && (
+                    <button onClick={handleQ3Submit} disabled={!q3Answer} style={{ ...s.btn, ...s.primaryBtn, marginTop: '14px', opacity: q3Answer ? 1 : 0.5 }}>Check</button>
+                )}
+
+                {q3Attempts > 0 && q3Attempts < 3 && !q3Submitted && (
+                    <div style={s.hintBox}>
+                        <strong>Hint {q3Attempts}/2: </strong>
+                        {q3Attempts === 1 && "Assets minus Liabilities. Subtract."}
+                        {q3Attempts === 2 && "$3,035 minus $910."}
+                    </div>
+                )}
+
+                {q3Submitted && q3Attempts < 3 && (
+                    <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. $3,035 − $910 = $2,125. Equity is the residual—mathematically determined by the recorded amounts of assets and liabilities.</div>
+                )}
+
+                {q3Submitted && q3Attempts >= 3 && (
+                    <div style={s.revealBox}><strong>$2,125.</strong> $3,035 − $910 = $2,125. Equity is the residual—mathematically determined by the recorded amounts of assets and liabilities.</div>
+                )}
+            </div>
+
+            {/* Q4 */}
+            {q3Submitted && (
+                <div style={s.card}>
+                    <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                        <span style={{ color: colors.primary }}>Question 4:</span> The accounting identity says Assets − Liabilities = Equity for a for-profit, and Assets − Liabilities = Net Assets for a nonprofit. Is the identity a formula to memorize, or a framework for organizing financial information?
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        {['A formula', 'A framework'].map(choice => {
+                            const isThis = q4Choice === choice;
+                            const isCorrect = choice === 'A framework';
+                            let borderColor = isThis ? colors.primary : colors.earthLight;
+                            let bg = isThis ? '#eef3fa' : 'white';
+                            if (q4Submitted) {
+                                if (isCorrect) { borderColor = colors.success; bg = colors.successBg; }
+                                else if (isThis && !isCorrect) { borderColor = colors.error; bg = colors.errorBg; }
+                            }
+                            return (
+                                <button key={choice} onClick={() => handleQ4(choice)} disabled={q4Submitted}
+                                    style={{ padding: '16px', borderRadius: '10px', border: `2px solid ${borderColor}`, background: bg, cursor: q4Submitted ? 'default' : 'pointer', fontWeight: 700, fontSize: '16px', color: colors.textDark }}>
+                                    {choice}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {q4Attempts > 0 && q4Attempts < 3 && !q4Submitted && (
+                        <div style={s.hintBox}>
+                            <strong>Hint {q4Attempts}/2: </strong>
+                            {q4Attempts === 1 && "Think about what the identity does. Does it calculate something new, or does it organize what's already recorded?"}
+                            {q4Attempts === 2 && "Nobody calculates equity independently. It's whatever is left after you subtract liabilities from assets. It's determined by the records, not calculated separately."}
+                        </div>
+                    )}
+
+                    {q4Submitted && q4Attempts < 3 && (
+                        <div style={s.successBox}><span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span> Right. A framework. The accounting identity organizes financial information. The residual—Equity or Net Assets—is not an independent number someone calculated. It's mathematically determined by whatever has been recorded as assets and liabilities.</div>
+                    )}
+
+                    {q4Submitted && q4Attempts >= 3 && (
+                        <div style={s.revealBox}><strong>A framework.</strong> The accounting identity organizes financial information. The residual—Equity or Net Assets—is not an independent number someone calculated. It's mathematically determined by whatever has been recorded as assets and liabilities.</div>
+                    )}
+                </div>
+            )}
+
+            {q4Submitted && (
+                <ContinueButton onClick={() => setPhase('naming4')}>Continue</ContinueButton>
+            )}
+        </div>
+    );
+
+    // ─── PHASE: naming4 — The Genius ────────────────────
+    const renderNaming4 = () => (
+        <div className="fade-in">
+            <div style={s.dialogueBlock}>
+                <p style={{ fontWeight: 600, color: colors.primary, marginBottom: '10px' }}>Maya:</p>
+                <p style={{ fontStyle: 'italic', color: colors.earthDark }}>
+                    "Every entry you've been making touches two things at once. Cash goes down, materials go up. Cash goes up, an obligation begins. This is called <strong>double-entry</strong>. And here's the genius: because both sides are recorded together, the records tell you not just <em>that</em> something changed, but <em>what</em> changed and <em>why</em>. It's not a balancing trick—it's a system for telling the story of each transaction."
+                </p>
+            </div>
+
+            {/* Q5 */}
+            <div style={s.card}>
+                <p style={{ fontWeight: 600, color: colors.textDark, marginBottom: '14px', fontSize: '15px' }}>
+                    <span style={{ color: colors.primary }}>Question 5:</span> Think about Chapter 1, when Sofia's journal was a mess. Her entries said things like 'Bought filter parts. $60.' That's one side of the story. What's the other side—and why does recording both sides make the records more useful?
+                </p>
+                <textarea value={q5Answer} onChange={e => setQ5Answer(e.target.value)} disabled={q5Submitted} placeholder="Your answer..." rows={3} style={{ width: '100%', padding: '12px', border: `2px solid ${q5Submitted ? colors.success : colors.earthLight}`, borderRadius: '10px', fontSize: '14px', fontFamily: "'Source Sans 3', sans-serif", resize: 'none' }} />
+
+                {!q5Submitted && (
+                    <button onClick={handleQ5Submit} disabled={q5Answer.trim().length < 15} style={{ ...s.btn, ...s.primaryBtn, marginTop: '14px', opacity: q5Answer.trim().length >= 15 ? 1 : 0.5 }}>Submit</button>
+                )}
+
+                {q5Submitted && (
+                    <div style={s.successBox}>
+                        <span style={{ color: colors.success, marginRight: '6px' }}><CheckCircleIcon /></span>
+                        <strong>Your answer:</strong> Recording both sides turns a list of payments into a story. '$60 paid' tells you cash went down. 'Cash down $60, materials up $60' tells you <em>why</em>—Sofia got filter parts. Double-entry doesn't just balance the books; it conveys information about what changed and why it changed. Every entry tells a mini-story.
+                    </div>
+                )}
+            </div>
+
+            {q5Submitted && (
+                <ContinueButton onClick={() => setPhase('complete')}>Continue</ContinueButton>
+            )}
+        </div>
+    );
+
+    // ─── PHASE: Complete ─────────────────────────────────
+    const renderComplete = () => (
+        <div className="fade-in">
+            <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '80px', height: '80px', borderRadius: '50%', background: colors.accent, marginBottom: '14px' }}><TrophyIcon /></div>
+                <h2 style={{ color: colors.primary, fontSize: '22px', fontWeight: 700 }}>Chapter Complete!</h2>
+            </div>
+
+            <div style={{ ...s.card, border: `2px solid ${colors.success}` }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '12px' }}>What You Discovered</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {[
+                        'Every entry changes two things, not one—those two sides are called debits and credits',
+                        'Assets − Liabilities = a residual: Equity (for-profit) or Net Assets (nonprofit)—this framework is the accounting identity',
+                        'The residual is not calculated independently—it\'s determined by what\'s recorded as assets and liabilities',
+                        'Double-entry records both sides of every transaction, conveying information about what changed and why',
+                    ].map((item, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '14px', color: colors.earthDark }}>
+                            <span style={{ color: colors.success, flexShrink: 0, marginTop: '2px' }}>✓</span><span>{item}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div style={s.insightBox}>
+                <p style={{ fontWeight: 600, marginBottom: '8px' }}>The Deeper Point</p>
+                <p>Everything in this chapter was recognition, not new learning. You've been working with debits and credits, the accounting identity, and double-entry since Chapter 1. Maya just gave you the formal names. The system you built from experience <em>is</em> the formal system.</p>
+            </div>
+
+            <div style={{ ...s.card, background: colors.clayLight }}>
+                <p style={{ fontWeight: 700, color: colors.primary, marginBottom: '8px' }}>Coming Next</p>
+                <p style={{ fontSize: '14px', color: colors.earthDark, lineHeight: 1.5, marginBottom: '10px' }}>
+                    Sofia now has formal vocabulary for everything she built. But what do the numbers actually tell her? She sits down to read her records—and finds the numbers don't mean quite what she expected.
+                </p>
+                <p style={{ fontWeight: 700, color: colors.primary }}>Next: Chapter 6 &mdash; So What Do These Numbers Tell Me?</p>
+            </div>
+
+            <button onClick={() => { playContinueClick(); }} style={{ ...s.btn, ...s.primaryBtn, marginTop: '12px' }}>Next Chapter <ChevronRight /></button>
+            <button onClick={handleRestart} style={{ ...s.btn, ...s.outlineBtn, marginTop: '8px' }}><RestartIcon /> Restart Chapter</button>
+        </div>
+    );
+
+    // ─── Render ──────────────────────────────────────────
+    const renderPhase = () => {
+        switch (phase) {
+            case 'welcome': return renderWelcome();
+            case 'naming1': return renderNaming1();
+            case 'naming2': return renderNaming2();
+            case 'naming3': return renderNaming3();
+            case 'naming4': return renderNaming4();
+            case 'complete': return renderComplete();
+            default: return null;
+        }
+    };
+
+    return (
+        <div style={s.container}>
+            <Header />
+            <main style={s.main}>{renderPhase()}</main>
+            {showGlossary && <GlossaryModal />}
+        </div>
+    );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<Chapter5 />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introduction | Sofia's Story</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00356b;
+            --primary-light: #1a4a7a;
+            --sand: #f5f1e8;
+            --sand-light: #faf8f3;
+            --earth: #8b7355;
+            --earth-light: #d4c4a8;
+            --earth-dark: #5c4d3d;
+            --accent: #c9a227;
+            --text-dark: #2c2416;
+            --text-muted: #6b5d4d;
+            --clay-light: #e8dcc8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--sand-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* ─── Header Bar ────────────────────────── */
+        .top-bar {
+            background: var(--primary);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+
+        .top-bar a:hover { color: white; }
+
+        .top-bar .title-link {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .top-bar .title-link em {
+            color: var(--accent);
+            font-style: normal;
+        }
+
+        /* ─── Hero ──────────────────────────────── */
+        .hero {
+            background: var(--primary);
+            padding: 0 24px 56px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--sand-light);
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+
+        .hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(28px, 5vw, 42px);
+            font-weight: 600;
+            color: white;
+            line-height: 1.2;
+            max-width: 600px;
+            margin: 24px auto 12px;
+        }
+
+        .hero-sub {
+            font-size: 17px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 300;
+            font-style: italic;
+        }
+
+        /* ─── Prose Container ───────────────────── */
+        .prose {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 48px 24px 32px;
+        }
+
+        .prose p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            line-height: 1.8;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+        }
+
+        .prose p.first::first-letter {
+            font-size: 56px;
+            float: left;
+            line-height: 1;
+            padding-right: 8px;
+            padding-top: 4px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* ─── CTA ───────────────────────────────── */
+        .cta-section {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 16px 24px 64px;
+            text-align: center;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: var(--primary);
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .cta-button svg { transition: transform 0.15s; }
+        .cta-button:hover svg { transform: translateX(3px); }
+
+        .cta-note {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--earth);
+        }
+
+        /* ─── Creative Note ─────────────────────── */
+        .creative-note {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 24px 48px;
+        }
+
+        .creative-note-inner {
+            padding: 20px 24px;
+            border-radius: 12px;
+            background: var(--clay-light);
+            font-size: 14px;
+            color: var(--earth-dark);
+            line-height: 1.6;
+        }
+
+        .creative-note-inner strong {
+            color: var(--earth);
+        }
+
+        /* ─── Footer ────────────────────────────── */
+        footer {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 24px 24px 40px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--earth);
+            line-height: 1.6;
+            border-top: 1px solid var(--earth-light);
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 480px) {
+            .prose p { font-size: 18px; }
+            .hero { padding: 0 16px 48px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <nav class="top-bar">
+        <a href="index.html" class="title-link">Sofia's <em>Story</em></a>
+        <a href="index.html">&larr; All Chapters</a>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Meet Sofia</h1>
+        <p class="hero-sub">An optional introduction to the story</p>
+    </section>
+
+    <!-- Prose -->
+    <article class="prose">
+
+        <p class="first">Every organization begins with an idea. Sofia's came on a trail in the Rocky Mountains.</p>
+
+        <p>She was an engineer by training, a tinkerer by temperament. She had hiked these trails before, but this time she noticed something she hadn't thought much about: how hard it was for hikers and climbers to find safe, environmentally friendly portable water filtration. Most options were either expensive or wasteful. Some were both. She stopped at a stream crossing, watched the water run clear over the rocks, and started sketching in the margin of her trail map. A compact filter. Biodegradable materials. Something that purifies water as you drink it.</p>
+
+        <p>By the time she reached the trailhead that evening, the sketch had become an idea, and the idea had already split in two. She could sell these filters to backpackers and outdoor enthusiasts&mdash;people like herself who would pay for something well-designed. But she could also provide them to communities in water-stressed regions, places where clean drinking water was not a convenience but a daily uncertainty. One idea, two purposes. She did not yet know how consequential that split would become.</p>
+
+    </article>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <a href="chapter-1-the-messy-notebook.html" class="cta-button">
+            Begin Chapter 1
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <p class="cta-note">or <a href="index.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">browse all chapters</a></p>
+    </section>
+
+    <!-- Creative Note -->
+    <div class="creative-note">
+        <div class="creative-note-inner">
+            <strong>A note on creative liberties.</strong> Sofia is a fictional character. Her story compresses what would be months of messy decision-making into a tighter arc for teaching purposes. The amounts, dates, and details are chosen to create the accounting problems you need to understand. This is fiction in service of teaching accounting concepts.
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Sofia's Story is a project of <a href="https://som.yale.edu" target="_blank" rel="noopener">Yale School of Management</a>.</p>
+        <p style="margin-top: 8px;">Created by Rick Antle &middot; All content is fiction in service of teaching accounting concepts.</p>
+    </footer>
+
+</body>
+</html>

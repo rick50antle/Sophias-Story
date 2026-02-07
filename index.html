@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sofia's Story — Learn Accounting by Building It</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00356b;
+            --primary-light: #1a4a7a;
+            --sand: #f5f1e8;
+            --sand-light: #faf8f3;
+            --earth: #8b7355;
+            --earth-light: #d4c4a8;
+            --earth-dark: #5c4d3d;
+            --accent: #c9a227;
+            --text-dark: #2c2416;
+            --text-muted: #6b5d4d;
+            --clay-light: #e8dcc8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--sand-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* ─── Hero ─────────────────────────────── */
+        .hero {
+            background: var(--primary);
+            padding: 0 24px 48px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--sand-light);
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+
+        .hero-top {
+            padding: 32px 0 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .yale-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.6);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(36px, 6vw, 52px);
+            font-weight: 700;
+            color: white;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+
+        .hero h1 em {
+            color: var(--accent);
+            font-style: normal;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(16px, 2.5vw, 20px);
+            color: rgba(255,255,255,0.85);
+            max-width: 560px;
+            margin: 0 auto 28px;
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--accent);
+            color: var(--primary);
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+        }
+
+        .hero-cta svg { transition: transform 0.15s; }
+        .hero-cta:hover svg { transform: translateX(3px); }
+
+        .hero-meta {
+            margin-top: 20px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* ─── Premise ──────────────────────────── */
+        .premise {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 48px 24px 32px;
+            text-align: center;
+        }
+
+        .premise h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .premise p {
+            font-size: 17px;
+            line-height: 1.7;
+            color: var(--earth-dark);
+            margin-bottom: 12px;
+        }
+
+        .premise .highlight {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            font-style: italic;
+            color: var(--earth);
+            border-left: 3px solid var(--accent);
+            padding-left: 16px;
+            margin: 24px 0;
+            text-align: left;
+        }
+
+        /* ─── Chapter Grid ─────────────────────── */
+        .chapters-section {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 16px 24px 64px;
+        }
+
+        .part-label {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--earth);
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+
+        .part-label:not(:first-child) {
+            margin-top: 36px;
+        }
+
+        .chapter-card {
+            display: flex;
+            align-items: stretch;
+            background: white;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            text-decoration: none;
+            color: inherit;
+            overflow: hidden;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .card-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            min-width: 56px;
+            background: var(--primary);
+            color: white;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .card-body {
+            flex: 1;
+            padding: 16px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-info h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 3px;
+        }
+
+        .card-info p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .card-meta {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .card-duration {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .card-questions {
+            font-size: 11px;
+            color: var(--earth-light);
+            margin-top: 2px;
+        }
+
+        .card-arrow {
+            color: var(--earth-light);
+            transition: transform 0.15s, color 0.15s;
+        }
+
+        .chapter-card:hover .card-arrow {
+            color: var(--primary);
+            transform: translateX(3px);
+        }
+
+        /* ─── Approach ─────────────────────────── */
+        .approach {
+            background: white;
+            padding: 48px 24px;
+        }
+
+        .approach-inner {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        .approach h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .approach-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 520px) {
+            .approach-grid { grid-template-columns: 1fr; }
+        }
+
+        .approach-item {
+            padding: 20px;
+            border-radius: 12px;
+            background: var(--sand-light);
+            border: 1px solid var(--earth-light);
+        }
+
+        .approach-item h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .approach-item p {
+            font-size: 14px;
+            color: var(--earth-dark);
+            line-height: 1.5;
+        }
+
+        /* ─── Footer ──────────────────────────── */
+        footer {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--earth);
+            line-height: 1.6;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        footer a:hover { text-decoration: underline; }
+
+        /* ─── Responsive ──────────────────────── */
+        @media (max-width: 480px) {
+            .hero { padding: 0 16px 40px; }
+            .card-body { padding: 12px 14px; }
+            .card-meta { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-top">
+            <span class="yale-badge">Yale School of Management</span>
+        </div>
+        <h1>Sofia's <em>Story</em></h1>
+        <p class="hero-subtitle">Learn accounting by building it from scratch. No textbook. No memorization. Just a woman, a water filter, and the records she has to invent.</p>
+        <a href="chapter-1-the-messy-notebook.html" class="hero-cta">
+            Start Chapter 1
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+        </a>
+        <p class="hero-meta">8 interactive chapters &middot; ~2 hours &middot; 35 questions</p>
+    </section>
+
+    <!-- Premise -->
+    <section class="premise">
+        <h2>The Story</h2>
+        <p style="margin-bottom: 16px;"><a href="introduction.html" style="color: var(--primary); font-weight: 600; text-decoration: none; border-bottom: 2px solid var(--accent);">Read the introduction &rarr;</a></p>
+        <p>Sofia is an engineer who sketches a biodegradable water filter during a Rocky Mountain hike. She pursues it through two entities: <strong>ClearCurrent, LLC</strong>, which sells filters for profit, and <strong>The PureAccess Project</strong>, which distributes them to communities without clean water.</p>
+        <p>Her journey creates every accounting problem you need to understand &mdash; and you solve each one before learning what the formal system calls it.</p>
+        <div class="highlight">You experience the concept first. Then you learn the name. That order matters.</div>
+    </section>
+
+    <!-- Chapters -->
+    <section class="chapters-section">
+
+        <div class="part-label">Part 1 &mdash; Building</div>
+
+        <a href="chapter-1-the-messy-notebook.html" class="chapter-card">
+            <div class="card-number">1</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>The Messy Notebook</h3>
+                    <p>Sort financial entries from diary entries in Sofia's raw journal</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~18 min</div>
+                    <div class="card-questions">4 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+        <a href="chapter-2-two-directions.html" class="chapter-card">
+            <div class="card-number">2</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>Two Directions</h3>
+                    <p>Split the record into inflows and outflows when a donation arrives</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~12 min</div>
+                    <div class="card-questions">3 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+        <a href="chapter-3-whose-money-is-this.html" class="chapter-card">
+            <div class="card-number">3</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>Whose Money Is This?</h3>
+                    <p>Separate Sofia's project into two entities and sort transactions</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~20 min</div>
+                    <div class="card-questions">5 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+        <a href="chapter-4-two-lenses.html" class="chapter-card">
+            <div class="card-number">4</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>Two Lenses</h3>
+                    <p>Record the same purchase for two entities and see what changes</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~12 min</div>
+                    <div class="card-questions">4 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+        <div class="part-label">Part 2 &mdash; Naming</div>
+
+        <a href="chapter-5-reinventing-the-wheel.html" class="chapter-card">
+            <div class="card-number">5</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>You're Reinventing the Wheel</h3>
+                    <p>Connect your experience to formal vocabulary: debits, credits, the identity</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~22 min</div>
+                    <div class="card-questions">5 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+        <a href="chapter-6-what-do-these-numbers-tell-me.html" class="chapter-card">
+            <div class="card-number">6</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>So What Do These Numbers Tell Me?</h3>
+                    <p>Test the system's limits with real financial statements</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~18 min</div>
+                    <div class="card-questions">4 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+        <div class="part-label">Part 3 &mdash; Seeing</div>
+
+        <a href="chapter-7-the-idea-not-in-the-records.html" class="chapter-card">
+            <div class="card-number">7</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>The Idea That Is Not in the Records</h3>
+                    <p>Confront what accounting captures and what it leaves out</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~20 min</div>
+                    <div class="card-questions">7 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+        <a href="chapter-8-the-payoff.html" class="chapter-card">
+            <div class="card-number">8</div>
+            <div class="card-body">
+                <div class="card-info">
+                    <h3>The Payoff</h3>
+                    <p>Read both financial statements with full understanding</p>
+                </div>
+                <div class="card-meta">
+                    <div class="card-duration">~12 min</div>
+                    <div class="card-questions">3 questions</div>
+                </div>
+                <svg class="card-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+
+    </section>
+
+    <!-- Approach -->
+    <section class="approach">
+        <div class="approach-inner">
+            <h2>How These Chapters Work</h2>
+            <div class="approach-grid">
+                <div class="approach-item">
+                    <h3>Experience First</h3>
+                    <p>You solve the problem before learning the term. Every concept is felt before it's named.</p>
+                </div>
+                <div class="approach-item">
+                    <h3>One Story, Start to Finish</h3>
+                    <p>Sofia's journey from a hiking sketch to two working entities creates every accounting problem organically.</p>
+                </div>
+                <div class="approach-item">
+                    <h3>Interactive Questions</h3>
+                    <p>35 questions with progressive hints. You sort, calculate, reflect, and build &mdash; not memorize.</p>
+                </div>
+                <div class="approach-item">
+                    <h3>Records Are a Lens</h3>
+                    <p>Accounting represents reality; it doesn't mirror it. You'll learn to see what the numbers show and what they miss.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>Sofia's Story is a project of <a href="https://som.yale.edu" target="_blank" rel="noopener">Yale School of Management</a>.</p>
+        <p style="margin-top: 8px;">Created by Rick Antle &middot; All content is fiction in service of teaching accounting concepts.</p>
+    </footer>
+
+</body>
+</html>
